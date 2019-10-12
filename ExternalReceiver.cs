@@ -12,8 +12,8 @@ using UnityEngine;
 
 public class ExternalReceiver : MonoBehaviour
 {
-    public int Available = 0;
-    public float time = 0;
+    private int Available = 0;
+    private float time = 0;
 
     public GameObject Model;
 
@@ -57,7 +57,45 @@ public class ExternalReceiver : MonoBehaviour
                         var t = animator.GetBoneTransform(bone);
                         if (t != null)
                         {
-                            t.localPosition = pos;
+                            if (!(
+                                bone == HumanBodyBones.LeftIndexDistal ||
+                                bone == HumanBodyBones.LeftIndexIntermediate ||
+                                bone == HumanBodyBones.LeftIndexProximal ||
+                                bone == HumanBodyBones.LeftLittleDistal ||
+                                bone == HumanBodyBones.LeftLittleIntermediate ||
+                                bone == HumanBodyBones.LeftLittleProximal ||
+                                bone == HumanBodyBones.LeftMiddleDistal ||
+                                bone == HumanBodyBones.LeftMiddleIntermediate ||
+                                bone == HumanBodyBones.LeftMiddleProximal ||
+                                bone == HumanBodyBones.LeftRingDistal ||
+                                bone == HumanBodyBones.LeftRingIntermediate ||
+                                bone == HumanBodyBones.LeftRingProximal ||
+                                bone == HumanBodyBones.LeftThumbDistal ||
+                                bone == HumanBodyBones.LeftThumbIntermediate ||
+                                bone == HumanBodyBones.LeftThumbProximal ||
+
+                                bone == HumanBodyBones.RightIndexDistal ||
+                                bone == HumanBodyBones.RightIndexIntermediate ||
+                                bone == HumanBodyBones.RightIndexProximal ||
+                                bone == HumanBodyBones.RightLittleDistal ||
+                                bone == HumanBodyBones.RightLittleIntermediate ||
+                                bone == HumanBodyBones.RightLittleProximal ||
+                                bone == HumanBodyBones.RightMiddleDistal ||
+                                bone == HumanBodyBones.RightMiddleIntermediate ||
+                                bone == HumanBodyBones.RightMiddleProximal ||
+                                bone == HumanBodyBones.RightRingDistal ||
+                                bone == HumanBodyBones.RightRingIntermediate ||
+                                bone == HumanBodyBones.RightRingProximal ||
+                                bone == HumanBodyBones.RightThumbDistal ||
+                                bone == HumanBodyBones.RightThumbIntermediate ||
+                                bone == HumanBodyBones.RightThumbProximal ||
+
+                                bone == HumanBodyBones.LeftEye ||
+                                bone == HumanBodyBones.RightEye
+                                ))
+                            {
+                                t.localPosition = pos;
+                            }
                             t.localRotation = rot;
                         }
                     }
