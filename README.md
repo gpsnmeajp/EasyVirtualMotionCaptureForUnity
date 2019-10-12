@@ -9,7 +9,7 @@ VirtualMotionCaptureの姿勢情報を受信してUnityシーンに反映しま�
 
 # ExternalReceiverPackを使う場合(かんたん)
 0. Unityを準備する
-1. ExternalReceiverPackをダウンロードして動かしたいプロジェクトに入れる
+1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる
 https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack.unitypackage
 2. 読み込みたいVRMファイル入れて、SampleSceneを開いて配置する
 3. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
