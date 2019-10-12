@@ -7,6 +7,9 @@ VirtualMotionCaptureの姿勢情報を受信してUnityシーンに反映しま�
 + uOSC v0.0.2
 + Unity 2018.1.6f1
 
+**注意！**  
+**VMCとUnityで同じVRMを読み込むようにしてください！**  
+
 # ExternalReceiverPackを使う場合(かんたん)
 0. Unityを準備する
 1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる
