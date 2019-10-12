@@ -37,3 +37,6 @@ https://github.com/hecomi/uOSC/releases
 7. ExternalReceiverに、読み込んだVRMのGameObjectを「Model」に割り当てる
 8. uOSC ServerのPortをVirtualMotionCaptureに合わせる(デフォルト: 39539)
 9. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
+
+# 送信側の例
+https://github.com/gpsnmeajp/VirtualMotionCapture/blob/v0.22basefix/Assets/ExternalSender/ExternalSender.cs
