@@ -16,6 +16,9 @@ public class ExternalReceiver : MonoBehaviour
     private float time = 0;
 
     public GameObject Model;
+    private GameObject OldModel = null;
+
+    Animator animator = null;
 
     uOSC.uOscServer server;
 
@@ -36,13 +39,25 @@ public class ExternalReceiver : MonoBehaviour
         {
             time = (float)message.values[0];
         }
+
+        if (message.address == "/VMC/ExternalSender/Root/Transform")
+        {
+            Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
+            Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+
+            Model.transform.localPosition = pos;
+            Model.transform.localRotation = rot;
+        }
+
         if (message.address == "/VMC/ExternalSender/Bone/Transform")
         {
-            Animator animator = null;
-            if (Model != null)
+            //モデルが更新されたときのみ読み込み
+            if (Model != null && OldModel != Model)
             {
                 animator = Model.GetComponent<Animator>();
+                Debug.Log("new model detected");
             }
+            OldModel = Model;
 
             HumanBodyBones bone;
             if (Enum.TryParse<HumanBodyBones>((string)message.values[0], out bone))
