@@ -9,16 +9,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VRM;
 
+[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
     private int Available = 0;
     private float time = 0;
 
+    public bool BlendsharpEnable = true;
+
     public GameObject Model;
     private GameObject OldModel = null;
 
     Animator animator = null;
+    VRMBlendShapeProxy blendShapeProxy = null;
 
     uOSC.uOscServer server;
 
@@ -29,18 +34,29 @@ public class ExternalReceiver : MonoBehaviour
         server.onDataReceived.AddListener(OnDataReceived);
     }
 
+    void Update()
+    {
+        if (blendShapeProxy == null)
+        {
+            blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+            foreach (var b in blendShapeProxy.GetValues()) {
+                Debug.Log(b.Key + " / " + b.Value);
+            }
+        }
+    }
+
     void OnDataReceived(uOSC.Message message)
     {
-        if (message.address == "/VMC/ExternalSender/Available")
+        if (message.address == "/VMC/Ext/OK")
         {
             Available = (int)message.values[0];
         }
-        if (message.address == "/VMC/ExternalSender/Time")
+        else if (message.address == "/VMC/Ext/T")
         {
             time = (float)message.values[0];
         }
 
-        if (message.address == "/VMC/ExternalSender/Root/Transform")
+        else if (message.address == "/VMC/Ext/Root/Pos")
         {
             Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
             Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
@@ -49,12 +65,13 @@ public class ExternalReceiver : MonoBehaviour
             Model.transform.localRotation = rot;
         }
 
-        if (message.address == "/VMC/ExternalSender/Bone/Transform")
+        else if (message.address == "/VMC/Ext/Bone/Pos")
         {
             //モデルが更新されたときのみ読み込み
             if (Model != null && OldModel != Model)
             {
                 animator = Model.GetComponent<Animator>();
+                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
                 Debug.Log("new model detected");
             }
             OldModel = Model;
@@ -115,6 +132,24 @@ public class ExternalReceiver : MonoBehaviour
                         }
                     }
                 }
+            }
+        }
+
+        else if (message.address == "/VMC/Ext/Blend/Val")
+        {
+            string BlendName = (string)message.values[0];
+            float BlendValue = (float)message.values[1];
+
+            if (BlendsharpEnable)
+            {
+                blendShapeProxy.AccumulateValue(BlendName, BlendValue);
+            }
+        }
+        else if (message.address == "/VMC/Ext/Blend/Apply")
+        {
+            if (BlendsharpEnable)
+            {
+                blendShapeProxy.Apply();
             }
         }
     }
