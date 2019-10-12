@@ -7,6 +7,18 @@ VirtualMotionCaptureの姿勢情報を受信してUnityシーンに反映しま�
 + uOSC v0.0.2
 + Unity 2018.1.6f1
 
+# ExternalReceiverPackを使う場合(かんたん)
+0. Unityを準備する
+1. ExternalReceiverPackをダウンロードして動かしたいプロジェクトに入れる
+https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack.unitypackage
+2. 読み込みたいVRMファイル入れて、Sceneに配置する
+3. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
+
+以下を同梱しています。
++ [UniVRM-0.53.0_6b07(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
++ [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
+
+# 一から準備する場合
 0. Unityを準備する
 1. ExternalReceiver.csをダウンロードして、動かしたいプロジェクトに入れる
 2. UniVRMをダウンロードして、動かしたいプロジェクトに入れる  
