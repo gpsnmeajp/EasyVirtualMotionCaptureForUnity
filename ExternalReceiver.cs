@@ -14,12 +14,16 @@ using VRM;
 [RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
+    public GameObject Model;
+
+    public bool BlendSharpSynchronize = true;
+    public bool RootPositionSynchronize = true;
+    public bool BonePositionSynchronize = false;
+    public bool ShowInformation = false;
+
     private int Available = 0;
     private float time = 0;
 
-    public bool BlendsharpEnable = true;
-
-    public GameObject Model;
     private GameObject OldModel = null;
 
     Animator animator = null;
@@ -27,11 +31,29 @@ public class ExternalReceiver : MonoBehaviour
 
     uOSC.uOscServer server;
 
-    // Start is called before the first frame update
     void Start()
     {
         server = GetComponent<uOSC.uOscServer>();
         server.onDataReceived.AddListener(OnDataReceived);
+    }
+
+    int GetAvailable()
+    {
+        return Available;
+    }
+    float GetRemoteTime()
+    {
+        return time;
+    }
+
+    void OnGUI()
+    {
+        if (ShowInformation) {
+            GUIStyle color = new GUIStyle();
+            GUI.TextField(new Rect(0, 0, 120, 70), "ExternalReceiver");
+            GUI.Label(new Rect(10, 20, 100, 30), "Available: " + GetAvailable());
+            GUI.Label(new Rect(10, 40, 100, 300), "Time: " + GetRemoteTime());
+        }
     }
 
     void Update()
@@ -58,11 +80,14 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Root/Pos")
         {
-            Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-            Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+            if(RootPositionSynchronize)
+            {
+                Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
+                Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
 
-            Model.transform.localPosition = pos;
-            Model.transform.localRotation = rot;
+                Model.transform.localPosition = pos;
+                Model.transform.localRotation = rot;
+            }
         }
 
         else if (message.address == "/VMC/Ext/Bone/Pos")
@@ -72,64 +97,26 @@ public class ExternalReceiver : MonoBehaviour
             {
                 animator = Model.GetComponent<Animator>();
                 blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                OldModel = Model;
                 Debug.Log("new model detected");
             }
-            OldModel = Model;
 
             HumanBodyBones bone;
             if (Enum.TryParse<HumanBodyBones>((string)message.values[0], out bone))
             {
-                if (animator != null)
+                if (animator != null && bone != HumanBodyBones.LastBone)
                 {
                     Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
                     Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
 
-                    if (bone != HumanBodyBones.LastBone)
+                    var t = animator.GetBoneTransform(bone);
+                    if (t != null)
                     {
-                        var t = animator.GetBoneTransform(bone);
-                        if (t != null)
+                        if (BonePositionSynchronize)
                         {
-                            if (!(
-                                bone == HumanBodyBones.LeftIndexDistal ||
-                                bone == HumanBodyBones.LeftIndexIntermediate ||
-                                bone == HumanBodyBones.LeftIndexProximal ||
-                                bone == HumanBodyBones.LeftLittleDistal ||
-                                bone == HumanBodyBones.LeftLittleIntermediate ||
-                                bone == HumanBodyBones.LeftLittleProximal ||
-                                bone == HumanBodyBones.LeftMiddleDistal ||
-                                bone == HumanBodyBones.LeftMiddleIntermediate ||
-                                bone == HumanBodyBones.LeftMiddleProximal ||
-                                bone == HumanBodyBones.LeftRingDistal ||
-                                bone == HumanBodyBones.LeftRingIntermediate ||
-                                bone == HumanBodyBones.LeftRingProximal ||
-                                bone == HumanBodyBones.LeftThumbDistal ||
-                                bone == HumanBodyBones.LeftThumbIntermediate ||
-                                bone == HumanBodyBones.LeftThumbProximal ||
-
-                                bone == HumanBodyBones.RightIndexDistal ||
-                                bone == HumanBodyBones.RightIndexIntermediate ||
-                                bone == HumanBodyBones.RightIndexProximal ||
-                                bone == HumanBodyBones.RightLittleDistal ||
-                                bone == HumanBodyBones.RightLittleIntermediate ||
-                                bone == HumanBodyBones.RightLittleProximal ||
-                                bone == HumanBodyBones.RightMiddleDistal ||
-                                bone == HumanBodyBones.RightMiddleIntermediate ||
-                                bone == HumanBodyBones.RightMiddleProximal ||
-                                bone == HumanBodyBones.RightRingDistal ||
-                                bone == HumanBodyBones.RightRingIntermediate ||
-                                bone == HumanBodyBones.RightRingProximal ||
-                                bone == HumanBodyBones.RightThumbDistal ||
-                                bone == HumanBodyBones.RightThumbIntermediate ||
-                                bone == HumanBodyBones.RightThumbProximal ||
-
-                                bone == HumanBodyBones.LeftEye ||
-                                bone == HumanBodyBones.RightEye
-                                ))
-                            {
-                                t.localPosition = pos;
-                            }
-                            t.localRotation = rot;
+                            t.localPosition = pos;
                         }
+                        t.localRotation = rot;
                     }
                 }
             }
@@ -137,17 +124,14 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Blend/Val")
         {
-            string BlendName = (string)message.values[0];
-            float BlendValue = (float)message.values[1];
-
-            if (BlendsharpEnable)
+            if (BlendSharpSynchronize)
             {
-                blendShapeProxy.AccumulateValue(BlendName, BlendValue);
+                blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
             }
         }
         else if (message.address == "/VMC/Ext/Blend/Apply")
         {
-            if (BlendsharpEnable)
+            if (BlendSharpSynchronize)
             {
                 blendShapeProxy.Apply();
             }
