@@ -1,5 +1,5 @@
 ![icon](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true)
-# EasyVirtualMotionCaptureForUnity
+# EasyVirtualMotionCaptureForUnity(ExternalReceiver)
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
 sh_akiraさんのVirtualMotionCapture(OSC対応機能搭載版)が必要です。  
