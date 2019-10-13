@@ -1,6 +1,11 @@
 # EasyVirtualMotionCaptureForUnity
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
+sh_akiraさんのVirtualMotionCapture(OSC対応機能搭載版)が必要です。
+https://sh-akira.booth.pm/items/999760
+https://sh-akira.github.io/VirtualMotionCapture/
+https://github.com/sh-akira/VirtualMotionCapture
+
 動作確認済み環境
 + Windows 10
 + UniVRM-0.53.0_6b07
