@@ -15,7 +15,8 @@ https://github.com/sh-akira/VirtualMotionCapture
 **注意！**  
 **VMCとUnityで同じVRMを読み込むようにしてください！**  
 
-# ExternalReceiverPackを使う場合(かんたん)
+# 使い方
+## ExternalReceiverPackを使う場合(かんたん)
 0. Unityを準備する
 1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる
 https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack_v2_1.unitypackage
@@ -29,7 +30,7 @@ https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack_v2_1.unitypackage
 
 ![配置例](https://github.com/gpsnmeajp/VMC_ExternalReceiver/blob/README-image/img2.png?raw=true)
 
-# 一から準備する場合
+## 一から準備する場合
 0. Unityを準備する
 1. ExternalReceiver.csをダウンロードして、動かしたいプロジェクトに入れる
 2. UniVRMをダウンロードして、動かしたいプロジェクトに入れる  
@@ -43,10 +44,34 @@ https://github.com/hecomi/uOSC/releases
 8. uOSC ServerのPortをVirtualMotionCaptureに合わせる(デフォルト: 39539)
 9. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
 
+# How to use
+## ExternalReceiverPack (Easy)
+0. Open Unity project.
+1. Download ExternalReceiverPack and install.
+https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack_v2_1.unitypackage
+2. Drag&Drop your VRM file, and Open "ExternalReceiverScene", Place VRM Model.  
+ (or put "ExternalReceiver" prefab on your scene)
+3. put VRM Model game object on ExternalReceiver's "Model" in Scene View.
+4. Let's Play. (And turn on VirtualMotionCaputres OSC Function)
+
+## Manualy Setup
+0. Open Unity project.
+1. Download "ExternalReceiver.cs" and put in.
+2. Download "UniVRM" and put in.
+https://github.com/vrm-c/UniVRM/releases
+3. Download "uOSC" and put in.
+https://github.com/hecomi/uOSC/releases
+4. Drag&Drop your VRM file, and Place VRM Model.  
+5. "Create Empty" in Scene View.
+6. Attach "ExternalReceiver.cs" and "uOSC Server"
+7. put VRM Model game object on ExternalReceiver's "Model" in Scene View.
+8. Set uOSC Server's "Port" to VirtualMotionCapture's Port. (Default: 39539)
+9. Let's Play. (And turn on VirtualMotionCaputres OSC Function)
+
 # 送信側の例
 https://github.com/gpsnmeajp/VirtualMotionCapture/blob/v0.22basefix/Assets/ExternalSender/ExternalSender.cs
 
-# ライセンス
+# Licence
 CC0  
 http://creativecommons.org/publicdomain/zero/1.0/deed.ja  
 
