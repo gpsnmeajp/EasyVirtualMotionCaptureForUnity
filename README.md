@@ -1,5 +1,5 @@
-# VMC_ExternalReceiver
-VirtualMotionCaptureの姿勢情報を受信してUnityシーンに反映します。
+# EasyVirtualMotionCaptureForUnity
+VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
 動作確認済み環境
 + Windows 10
