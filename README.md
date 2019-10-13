@@ -28,7 +28,7 @@ https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack_v2_1.unitypackage
 + [UniVRM-0.53.0_6b07(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
 + [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
 
-![配置例](https://github.com/gpsnmeajp/VMC_ExternalReceiver/blob/README-image/img2.png?raw=true)
+![配置例](https://github.com/gpsnmeajp/VMC_ExternalReceiver/blob/README-image/img3.png?raw=true)
 
 ## 一から準備する場合
 0. Unityを準備する
