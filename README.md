@@ -13,11 +13,17 @@ https://github.com/sh-akira/VirtualMotionCapture
 + uOSC v0.0.2
 + Unity 2018.1.6f1
 
+# お問合せ先
+discordサーバー: https://discord.gg/QSrDhE8
+twitter: https://twitter.com/@seg_faul
+
 **注意！**  
 **VMCとUnityで同じVRMを読み込むようにしてください！**  
 
 # 使い方
 ## ExternalReceiverPackを使う場合(かんたん)
+説明動画: https://youtu.be/FhGqtzXEEQg
+
 0. Unityを準備する
 1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる  
 https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/releases/tag/v2.2  
