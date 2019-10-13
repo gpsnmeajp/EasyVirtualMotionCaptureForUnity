@@ -18,8 +18,8 @@ https://github.com/sh-akira/VirtualMotionCapture
 # 使い方
 ## ExternalReceiverPackを使う場合(かんたん)
 0. Unityを準備する
-1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる
-https://sabowl.sakura.ne.jp/gpsnmeajp/vmc/ExternalReceiverPack_v2_1.unitypackage
+1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる  
+https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/releases/tag/v2.2  
 2. 読み込みたいVRMファイル入れて、ExternalReceiverSceneを開いて配置する(あるいはExternalReceiverプレハブを配置する)
 3. Scene ViewでExternalReceiverに、読み込んだVRMのGameObjectを「Model」に割り当てる
 4. 再生して実行開始(VirtualMotionCaptureを起動してOSC送信開始状態にしてください)
