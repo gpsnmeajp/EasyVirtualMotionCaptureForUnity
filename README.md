@@ -68,6 +68,9 @@ https://github.com/hecomi/uOSC/releases
 8. Set uOSC Server's "Port" to VirtualMotionCapture's Port. (Default: 39539)
 9. Let's Play. (And turn on VirtualMotionCaputres OSC Function)
 
+# Protocol
+https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Protocol-V2
+
 # 送信側の例
 https://github.com/gpsnmeajp/VirtualMotionCapture/blob/v0.22basefix/Assets/ExternalSender/ExternalSender.cs
 
