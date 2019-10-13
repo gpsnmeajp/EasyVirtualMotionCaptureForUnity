@@ -47,9 +47,9 @@ https://github.com/hecomi/uOSC/releases
 https://github.com/gpsnmeajp/VirtualMotionCapture/blob/v0.22basefix/Assets/ExternalSender/ExternalSender.cs
 
 # ライセンス
-CC0
-http://creativecommons.org/publicdomain/zero/1.0/deed.ja
+CC0  
+http://creativecommons.org/publicdomain/zero/1.0/deed.ja  
 
 # 作者
-gpsnmeajp
-https://sabowl.sakura.ne.jp/gpsnmeajp/
+gpsnmeajp  
+https://sabowl.sakura.ne.jp/gpsnmeajp/  
