@@ -3,6 +3,7 @@
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
 sh_akiraさんのVirtualMotionCapture(OSC対応機能搭載版)が必要です。  
+**※通常リリース版ではまだ使えません！！！！**  
 https://sh-akira.booth.pm/items/999760  
 https://sh-akira.github.io/VirtualMotionCapture/  
 https://github.com/sh-akira/VirtualMotionCapture  
@@ -14,8 +15,8 @@ https://github.com/sh-akira/VirtualMotionCapture
 + Unity 2018.1.6f1
 
 # お問合せ先
-discordサーバー: https://discord.gg/QSrDhE8
-twitter: https://twitter.com/@seg_faul
+discordサーバー: https://discord.gg/QSrDhE8  
+twitter: https://twitter.com/@seg_faul  
 
 **注意！**  
 **VMCとUnityで同じVRMを読み込むようにしてください！**  
