@@ -1,3 +1,4 @@
+![icon](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true)
 # EasyVirtualMotionCaptureForUnity
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
