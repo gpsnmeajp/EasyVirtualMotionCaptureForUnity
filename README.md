@@ -2,11 +2,11 @@
 # EasyVirtualMotionCaptureForUnity(ExternalReceiver)
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
-sh_akiraさんのVirtualMotionCapture(OSC対応機能搭載版)が必要です。  
-**※通常リリース版ではまだ使えません！！！！**  
-https://sh-akira.booth.pm/items/999760  
+sh_akiraさんのVirtualMotionCapture(v0.35～)が必要です。  
 https://sh-akira.github.io/VirtualMotionCapture/  
-https://github.com/sh-akira/VirtualMotionCapture  
+**※旧バージョン(～v0.34)では使えません！！！！**  
+先行リリース版はFanboxで提供されています。  
+https://www.pixiv.net/fanbox/creator/10267568
 
 動作確認済み環境
 + Windows 10
