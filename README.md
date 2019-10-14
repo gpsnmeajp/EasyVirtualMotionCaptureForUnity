@@ -17,7 +17,7 @@ https://youtu.be/FhGqtzXEEQg
 sh_akiraさんのVirtualMotionCapture(v0.36～)が必要です。  
 https://sh-akira.github.io/VirtualMotionCapture/  
   
-**※旧バージョン(～v0.36)では使えません！！！！**  
+**※旧バージョン(～v0.35)では使えません！！！！**  
 先行リリース版はFanboxで提供されています。  
 https://www.pixiv.net/fanbox/creator/10267568
 
