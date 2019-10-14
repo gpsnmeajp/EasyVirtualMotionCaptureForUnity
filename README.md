@@ -65,6 +65,29 @@ https://github.com/hecomi/uOSC/releases
 8. uOSC ServerのPortをVirtualMotionCaptureに合わせる(デフォルト: 39539)
 9. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
 
+## オプション
+![オプション](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img4.png?raw=true)
+### Synchronize Option
+**Blend Sharp Synchronize**  
+VRMのBlendSharp(表情・リップシンクなど)を同期するか(既定でtrue:する)  
+
+**RootPositionSynchronize**  
+Rootの姿勢情報を同期するか(既定でtrue:する)    
+
+**BonePositionSynchronize**  
+ボーンの位置情報を同期するか(既定でfalse:回転のみ)  
+
+### UI Option
+**ShowInformation**  
+通信状況表示をするか(既定でfalse:しない)
+
+### Filter Option
+**BoneRotationFilterEnable**  
+ボーンの回転にローパスフィルタを掛けるか(既定でfalse:しない)
+**filter**
+ローパスフィルタ係数(0～1:既定で0.9)  
+1に近いほど過去の影響が強くなる  
+
 # How to use
 ## ExternalReceiverPack (Easy)
 0. Open Unity project.
