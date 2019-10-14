@@ -14,10 +14,10 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 https://youtu.be/FhGqtzXEEQg
 
 # 前提環境
-sh_akiraさんのVirtualMotionCapture(v0.35～)が必要です。  
+sh_akiraさんのVirtualMotionCapture(v0.36～)が必要です。  
 https://sh-akira.github.io/VirtualMotionCapture/  
   
-**※旧バージョン(～v0.34)では使えません！！！！**  
+**※旧バージョン(～v0.36)では使えません！！！！**  
 先行リリース版はFanboxで提供されています。  
 https://www.pixiv.net/fanbox/creator/10267568
 
