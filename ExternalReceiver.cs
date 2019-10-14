@@ -109,9 +109,9 @@ public class ExternalReceiver : MonoBehaviour
                 Debug.Log("new model detected");
             }
 
-            try
+            HumanBodyBones bone;
+            if (EnumTryParse<HumanBodyBones>((string)message.values[0], out bone))
             {
-                HumanBodyBones bone = (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), (string)message.values[0]);
                 if (animator != null && bone != HumanBodyBones.LastBone)
                 {
                     Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
@@ -136,9 +136,6 @@ public class ExternalReceiver : MonoBehaviour
                     }
                 }
             }
-            catch(ArgumentException) {
-                //Do noting
-            }
         }
 
         else if (message.address == "/VMC/Ext/Blend/Val")
@@ -155,5 +152,23 @@ public class ExternalReceiver : MonoBehaviour
                 blendShapeProxy.Apply();
             }
         }
+    }
+
+    private static bool EnumTryParse<T>(string value, out T result) where T : struct
+    {
+#if NET_4_6
+        return Enum.TryParse(value, out result);
+#else
+        try
+        {
+            result = (T)Enum.Parse(typeof (T), value, true);
+            return true;
+        }
+        catch
+        {
+            result = default(T);
+            return false;
+        }
+#endif
     }
 }
