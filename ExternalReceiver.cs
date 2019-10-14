@@ -14,12 +14,20 @@ using VRM;
 [RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
+    [Header("ExternalReceiver v2.3")]
     public GameObject Model;
 
+    [Header("Synchronize Option")]
     public bool BlendSharpSynchronize = true;
     public bool RootPositionSynchronize = true;
     public bool BonePositionSynchronize = false;
+    [Header("UI Option")]
     public bool ShowInformation = false;
+    [Header("Filter Option")]
+    public bool BoneRotationFilterEnable = false;
+    public float filter = 0.9f;
+
+    private Quaternion[] boneRotFilter = new Quaternion[Enum.GetNames(typeof(HumanBodyBones)).Length];
 
     private int Available = 0;
     private float time = 0;
@@ -116,7 +124,13 @@ public class ExternalReceiver : MonoBehaviour
                         {
                             t.localPosition = pos;
                         }
-                        t.localRotation = rot;
+                        if (BoneRotationFilterEnable)
+                        {
+                            boneRotFilter[(int)bone] = Quaternion.Slerp(boneRotFilter[(int)bone], rot, 1.0f - filter);
+                            t.localRotation = boneRotFilter[(int)bone];
+                        } else {
+                            t.localRotation = rot;
+                        }
                     }
                 }
             }
