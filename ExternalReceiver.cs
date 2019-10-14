@@ -14,7 +14,7 @@ using VRM;
 [RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.4")]
+    [Header("ExternalReceiver v2.5")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
