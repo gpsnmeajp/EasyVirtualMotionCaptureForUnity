@@ -2,8 +2,13 @@
 # EasyVirtualMotionCaptureForUnity(ExternalReceiver)
 VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
 
+# 使い方動画
+https://youtu.be/FhGqtzXEEQg
+
+# 前提環境
 sh_akiraさんのVirtualMotionCapture(v0.35～)が必要です。  
 https://sh-akira.github.io/VirtualMotionCapture/  
+  
 **※旧バージョン(～v0.34)では使えません！！！！**  
 先行リリース版はFanboxで提供されています。  
 https://www.pixiv.net/fanbox/creator/10267568
@@ -23,8 +28,6 @@ twitter: https://twitter.com/@seg_faul
 
 # 使い方
 ## ExternalReceiverPackを使う場合(かんたん)
-説明動画: https://youtu.be/FhGqtzXEEQg
-
 0. Unityを準備する
 1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる  
 https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/releases/tag/v2.2  
