@@ -6,6 +6,10 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 トラッキング品質は安心と信頼のバーチャルモーションキャプチャー同等。  
 プロトコルは公開されており、自由に拡張可能。  
 
+ハッシュタグは  
+#EasyVirtualMotionCaptureForUnity  
+#EVMC4U  
+
 # 使い方動画
 https://youtu.be/FhGqtzXEEQg
 
