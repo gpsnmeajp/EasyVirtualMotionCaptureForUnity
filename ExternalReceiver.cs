@@ -14,7 +14,7 @@ using VRM;
 [RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.3")]
+    [Header("ExternalReceiver v2.4")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
@@ -109,9 +109,9 @@ public class ExternalReceiver : MonoBehaviour
                 Debug.Log("new model detected");
             }
 
-            HumanBodyBones bone;
-            if (Enum.TryParse<HumanBodyBones>((string)message.values[0], out bone))
+            try
             {
+                HumanBodyBones bone = (HumanBodyBones)Enum.Parse(typeof(HumanBodyBones), (string)message.values[0]);
                 if (animator != null && bone != HumanBodyBones.LastBone)
                 {
                     Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
@@ -128,11 +128,16 @@ public class ExternalReceiver : MonoBehaviour
                         {
                             boneRotFilter[(int)bone] = Quaternion.Slerp(boneRotFilter[(int)bone], rot, 1.0f - filter);
                             t.localRotation = boneRotFilter[(int)bone];
-                        } else {
+                        }
+                        else
+                        {
                             t.localRotation = rot;
                         }
                     }
                 }
+            }
+            catch(ArgumentException) {
+                //Do noting
             }
         }
 
