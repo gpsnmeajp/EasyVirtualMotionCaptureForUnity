@@ -1,6 +1,10 @@
 ![icon](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true)
 # EasyVirtualMotionCaptureForUnity(ExternalReceiver)
-VirtualMotionCaptureのUDP姿勢情報を受信してUnityシーンに反映します。
+VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映します。  
+  
+あなたのUnityシーンをUnityPackage1つで全身トラッキング対応にできます。  
+トラッキング品質は安心と信頼のバーチャルモーションキャプチャー同等。  
+プロトコルは公開されており、自由に拡張可能。  
 
 # 使い方動画
 https://youtu.be/FhGqtzXEEQg
@@ -18,6 +22,8 @@ https://www.pixiv.net/fanbox/creator/10267568
 + UniVRM-0.53.0_6b07
 + uOSC v0.0.2
 + Unity 2018.1.6f1
++ Steam VR
++ HTC Vive
 
 # お問合せ先
 discordサーバー: https://discord.gg/QSrDhE8  
