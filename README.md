@@ -25,7 +25,7 @@ https://www.pixiv.net/fanbox/creator/10267568
 + Windows 10
 + UniVRM-0.53.0_6b07
 + uOSC v0.0.2
-+ Unity 2018.1.6f1
++ Unity 2018.1.6f1 (5.6.3p1以上)
 + Steam VR
 + HTC Vive
 
