@@ -11,7 +11,7 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 #EVMC4U  
 
 # 使い方動画
-https://youtu.be/FhGqtzXEEQg
+https://youtu.be/L5dkdnk5c9A
 
 # 前提環境
 sh_akiraさんのVirtualMotionCapture(v0.36～)が必要です。  
@@ -38,6 +38,8 @@ twitter: https://twitter.com/@seg_faul
 
 # 使い方
 ## ExternalReceiverPackを使う場合(かんたん)
+動画: https://youtu.be/L5dkdnk5c9A
+
 0. Unityを準備する
 1. ExternalReceiverPackをダウンロードして新しい3Dプロジェクトに入れる  
 https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/releases  
