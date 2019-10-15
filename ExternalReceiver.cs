@@ -14,13 +14,13 @@ using VRM;
 [RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.5")]
+    [Header("ExternalReceiver v2.6")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
     public bool BlendSharpSynchronize = true;
     public bool RootPositionSynchronize = true;
-    public bool BonePositionSynchronize = false;
+    public bool BonePositionSynchronize = true;
     [Header("UI Option")]
     public bool ShowInformation = false;
     [Header("Filter Option")]
