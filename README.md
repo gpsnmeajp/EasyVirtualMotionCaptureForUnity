@@ -115,7 +115,7 @@ Rootの**回転**情報を同期するか(既定でtrue:する)
 **uOSC Serverを持つ**ExternalReceiverから順にNextに登録することで、  
 ExternalReceiverを連結することができます。  
 これにより、複数体のアバターを同時に動かすことができるようになります。  
-**なお、無限ループを形成しないようにご注意ください**
+**なお、無限ループを形成しないようにご注意ください。Unityが落ちます**
   
 ![Daisy Chain](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/Daisy.png?raw=true)
   
