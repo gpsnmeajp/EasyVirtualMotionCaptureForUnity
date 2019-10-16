@@ -16,7 +16,7 @@ https://youtu.be/L5dkdnk5c9A
 # 前提環境
 sh_akiraさんのVirtualMotionCapture(v0.36～)が必要です。  
 https://sh-akira.github.io/VirtualMotionCapture/  
-  
+
 **※旧バージョン(～v0.35)では使えません！！！！**  
 先行リリース版はFanboxで提供されています。  
 https://www.pixiv.net/fanbox/creator/10267568
@@ -28,6 +28,9 @@ https://www.pixiv.net/fanbox/creator/10267568
 + Unity 2018.1.6f1 (5.6.3p1以上)
 + Steam VR
 + HTC Vive
+
+なお、[EasyMotionRecorder](https://github.com/duo-inc/EasyMotionRecorder)を使うことで、モーションの記録も可能になります。  
+注意点があります。下の**よくある質問**をご確認ください。  
 
 # お問合せ先
 discordサーバー: https://discord.gg/QSrDhE8  
@@ -92,6 +95,16 @@ Rootの姿勢情報を同期するか(既定でtrue:する)
 1に近いほど過去の影響が強くなる  
 
 ## よくある質問
+### EasyMotionRecorderを使うと動きが変
+VRMの方にApply Root Motionのチェックが入っているかを確認してください。  
+これがオンになっていないと、その場でくるくる回転してしまいます。  
+  
+また、再生の際は、Motion Data Player(Script)ではなく、animファイル生成を行って確認してください。  
+[EasyMotionRecorder](https://github.com/duo-inc/EasyMotionRecorder)
+
+![Root](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img5.png?raw=true)
+
+
 ### Blend Sharp Synchronizeって何？オフにしていい？  
 基本的にオンにしておいてください。  
 オンのとき、VRMのBlendSharp(表情・リップシンクなど)を同期します。  
