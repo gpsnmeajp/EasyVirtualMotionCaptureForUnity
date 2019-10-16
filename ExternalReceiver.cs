@@ -11,22 +11,31 @@ using System.Collections.Generic;
 using UnityEngine;
 using VRM;
 
-[RequireComponent(typeof(uOSC.uOscServer))]
+//[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.6")]
+    [Header("ExternalReceiver v2.7")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
-    public bool BlendSharpSynchronize = true;
+    public bool BlendShapeSynchronize = true;
     public bool RootPositionSynchronize = true;
+    public bool RootRotationSynchronize = true;
     public bool BonePositionSynchronize = true;
     [Header("UI Option")]
     public bool ShowInformation = false;
     [Header("Filter Option")]
+    public bool BonePositionFilterEnable = false;
     public bool BoneRotationFilterEnable = false;
-    public float filter = 0.9f;
+    public float filter = 0.7f;
 
+    [Header("Status")]
+    public string StatusMessage = "";
+    [Header("Daisy Chain")]
+    public ExternalReceiver NextReceiver = null;
+
+
+    private Vector3[] bonePosFilter = new Vector3[Enum.GetNames(typeof(HumanBodyBones)).Length];
     private Quaternion[] boneRotFilter = new Quaternion[Enum.GetNames(typeof(HumanBodyBones)).Length];
 
     private int Available = 0;
@@ -42,7 +51,14 @@ public class ExternalReceiver : MonoBehaviour
     void Start()
     {
         server = GetComponent<uOSC.uOscServer>();
-        server.onDataReceived.AddListener(OnDataReceived);
+        if (server)
+        {
+            StatusMessage = "Waiting for VMC...";
+            server.onDataReceived.AddListener(OnDataReceived);
+        }
+        else {
+            StatusMessage = "Waiting for Master...";
+        }
     }
 
     int GetAvailable()
@@ -66,6 +82,8 @@ public class ExternalReceiver : MonoBehaviour
 
     void Update()
     {
+        Application.runInBackground = true;
+
         if (blendShapeProxy == null)
         {
             blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
@@ -75,8 +93,10 @@ public class ExternalReceiver : MonoBehaviour
         }
     }
 
-    void OnDataReceived(uOSC.Message message)
+    public void OnDataReceived(uOSC.Message message)
     {
+        StatusMessage = "OK";
+
         if (message.address == "/VMC/Ext/OK")
         {
             Available = (int)message.values[0];
@@ -88,12 +108,15 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Root/Pos")
         {
-            if(RootPositionSynchronize)
-            {
-                Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-                Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+            Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
+            Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
 
+            if (RootPositionSynchronize)
+            {
                 Model.transform.localPosition = pos;
+            }
+            if (RootRotationSynchronize)
+            {
                 Model.transform.localRotation = rot;
             }
         }
@@ -122,8 +145,16 @@ public class ExternalReceiver : MonoBehaviour
                     {
                         if (BonePositionSynchronize)
                         {
-                            t.localPosition = pos;
+                            if (BonePositionFilterEnable)
+                            {
+                                bonePosFilter[(int)bone] = (bonePosFilter[(int)bone] * filter) + pos*(1.0f- filter);
+                                t.localPosition = bonePosFilter[(int)bone];
+                            }
+                            else {
+                                t.localPosition = pos;
+                            }
                         }
+
                         if (BoneRotationFilterEnable)
                         {
                             boneRotFilter[(int)bone] = Quaternion.Slerp(boneRotFilter[(int)bone], rot, 1.0f - filter);
@@ -140,17 +171,23 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Blend/Val")
         {
-            if (BlendSharpSynchronize)
+            if (BlendShapeSynchronize)
             {
                 blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
             }
         }
         else if (message.address == "/VMC/Ext/Blend/Apply")
         {
-            if (BlendSharpSynchronize)
+            if (BlendShapeSynchronize)
             {
                 blendShapeProxy.Apply();
             }
+        }
+
+        //Next
+        if (NextReceiver != null)
+        {
+            NextReceiver.OnDataReceived(message);
         }
     }
 
