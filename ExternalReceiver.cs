@@ -14,7 +14,7 @@ using VRM;
 //[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.7")]
+    [Header("ExternalReceiver v2.8")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
@@ -95,11 +95,13 @@ public class ExternalReceiver : MonoBehaviour
 
     public void OnDataReceived(uOSC.Message message)
     {
-        StatusMessage = "OK";
-
         if (message.address == "/VMC/Ext/OK")
         {
             Available = (int)message.values[0];
+            if (Available == 0) {
+                StatusMessage = "Waiting for [Load VRM]";
+            }
+
         }
         else if (message.address == "/VMC/Ext/T")
         {
@@ -108,6 +110,8 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Root/Pos")
         {
+            StatusMessage = "OK";
+
             Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
             Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
 
