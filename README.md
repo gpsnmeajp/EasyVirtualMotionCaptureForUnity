@@ -120,6 +120,14 @@ ExternalReceiverを連結することができます。
 ![Daisy Chain](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/Daisy.png?raw=true)
   
 ## よくある質問
+### なんかボーンが空中に固定される
+もしかして、Dynamic Boneとか使おうとしていませんか？  
+あるいは盛大にVRM Spring boneとか入れていませんか？  
+抜いたバージョンで試してみてください。  
+  
+また、「ニコニ立体ちゃん (VRM)」で動作確認をしていますので、こちらで同じ状態になるか確認してみてください。  
+https://3d.nicovideo.jp/works/td32797
+
 ### EasyMotionRecorderを使うと動きが変
 VRMの方にApply Root Motionのチェックが入っているかを確認してください。  
 これがオンになっていないと、その場でくるくる回転してしまいます。  
