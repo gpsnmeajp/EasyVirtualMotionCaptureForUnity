@@ -14,7 +14,7 @@ using VRM;
 //[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.8")]
+    [Header("ExternalReceiver v2.8b")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
@@ -22,9 +22,15 @@ public class ExternalReceiver : MonoBehaviour
     public bool RootPositionSynchronize = true;
     public bool RootRotationSynchronize = true;
     public bool BonePositionSynchronize = true;
+
+    [Header("Synchronize Cutoff Option")]
+    public bool HandPoseSynchronizeCutoff = false;
+    public bool EyeBoneSynchronizeCutoff = false;
+
     [Header("UI Option")]
     public bool ShowInformation = false;
-    [Header("Filter Option")]
+
+    [Header("Lowpass Filter Option")]
     public bool BonePositionFilterEnable = false;
     public bool BoneRotationFilterEnable = false;
     public float filter = 0.7f;
@@ -47,6 +53,8 @@ public class ExternalReceiver : MonoBehaviour
     VRMBlendShapeProxy blendShapeProxy = null;
 
     uOSC.uOscServer server;
+
+    bool shutdown = false;
 
     void Start()
     {
@@ -82,19 +90,37 @@ public class ExternalReceiver : MonoBehaviour
 
     void Update()
     {
+        if (shutdown) { return; }
+
         Application.runInBackground = true;
 
-        if (blendShapeProxy == null)
+        if (blendShapeProxy == null && Model != null)
         {
             blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
             foreach (var b in blendShapeProxy.GetValues()) {
-                Debug.Log(b.Key + " / " + b.Value);
+                Debug.Log("[ExternalReceiver]" + b.Key + " / " + b.Value);
             }
         }
+
+        if (Model == null)
+        {
+            StatusMessage = "Model not found.";
+            return;
+        }
+
+    }
+    private void OnDataReceived(uOSC.Message message)
+    {
+        ProcessMessage(message, 0);
     }
 
-    public void OnDataReceived(uOSC.Message message)
+    public void ProcessMessage(uOSC.Message message, int callCount)
     {
+        if (shutdown) { return; }
+        if (Model == null) {
+            return;
+        }
+
         if (message.address == "/VMC/Ext/OK")
         {
             Available = (int)message.values[0];
@@ -127,50 +153,10 @@ public class ExternalReceiver : MonoBehaviour
 
         else if (message.address == "/VMC/Ext/Bone/Pos")
         {
-            //モデルが更新されたときのみ読み込み
-            if (Model != null && OldModel != Model)
-            {
-                animator = Model.GetComponent<Animator>();
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
-                OldModel = Model;
-                Debug.Log("new model detected");
-            }
+            Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
+            Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
 
-            HumanBodyBones bone;
-            if (EnumTryParse<HumanBodyBones>((string)message.values[0], out bone))
-            {
-                if (animator != null && bone != HumanBodyBones.LastBone)
-                {
-                    Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-                    Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
-
-                    var t = animator.GetBoneTransform(bone);
-                    if (t != null)
-                    {
-                        if (BonePositionSynchronize)
-                        {
-                            if (BonePositionFilterEnable)
-                            {
-                                bonePosFilter[(int)bone] = (bonePosFilter[(int)bone] * filter) + pos*(1.0f- filter);
-                                t.localPosition = bonePosFilter[(int)bone];
-                            }
-                            else {
-                                t.localPosition = pos;
-                            }
-                        }
-
-                        if (BoneRotationFilterEnable)
-                        {
-                            boneRotFilter[(int)bone] = Quaternion.Slerp(boneRotFilter[(int)bone], rot, 1.0f - filter);
-                            t.localRotation = boneRotFilter[(int)bone];
-                        }
-                        else
-                        {
-                            t.localRotation = rot;
-                        }
-                    }
-                }
-            }
+            BoneSynchronize((string)message.values[0],pos,rot);
         }
 
         else if (message.address == "/VMC/Ext/Blend/Val")
@@ -191,7 +177,120 @@ public class ExternalReceiver : MonoBehaviour
         //Next
         if (NextReceiver != null)
         {
-            NextReceiver.OnDataReceived(message);
+            if (callCount > 100)
+            {
+                //無限ループ対策
+                Debug.LogError("[ExternalReceiver] Too many call(maybe infinite loop).");
+                StatusMessage = "Infinite loop detected!";
+                shutdown = true;
+            }
+            else {
+                NextReceiver.ProcessMessage(message, callCount + 1);
+            }
+        }
+    }
+
+    private void BoneSynchronize(string boneName, Vector3 pos, Quaternion rot)
+    {
+        //モデルが更新されたときのみ読み込み
+        if (Model != null && OldModel != Model)
+        {
+            animator = Model.GetComponent<Animator>();
+            blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+            OldModel = Model;
+            Debug.Log("[ExternalReceiver] New model detected");
+        }
+
+        HumanBodyBones bone;
+        if (EnumTryParse<HumanBodyBones>(boneName, out bone))
+        {
+            if (animator != null && bone != HumanBodyBones.LastBone)
+            {
+                var t = animator.GetBoneTransform(bone);
+                if (t != null)
+                {
+                    if (bone == HumanBodyBones.LeftIndexDistal ||
+                        bone == HumanBodyBones.LeftIndexIntermediate ||
+                        bone == HumanBodyBones.LeftIndexProximal ||
+                        bone == HumanBodyBones.LeftLittleDistal ||
+                        bone == HumanBodyBones.LeftLittleIntermediate ||
+                        bone == HumanBodyBones.LeftLittleProximal ||
+                        bone == HumanBodyBones.LeftMiddleDistal ||
+                        bone == HumanBodyBones.LeftMiddleIntermediate ||
+                        bone == HumanBodyBones.LeftMiddleProximal ||
+                        bone == HumanBodyBones.LeftRingDistal ||
+                        bone == HumanBodyBones.LeftRingIntermediate ||
+                        bone == HumanBodyBones.LeftRingProximal ||
+                        bone == HumanBodyBones.LeftThumbDistal ||
+                        bone == HumanBodyBones.LeftThumbIntermediate ||
+                        bone == HumanBodyBones.LeftThumbProximal ||
+
+                        bone == HumanBodyBones.RightIndexDistal ||
+                        bone == HumanBodyBones.RightIndexIntermediate ||
+                        bone == HumanBodyBones.RightIndexProximal ||
+                        bone == HumanBodyBones.RightLittleDistal ||
+                        bone == HumanBodyBones.RightLittleIntermediate ||
+                        bone == HumanBodyBones.RightLittleProximal ||
+                        bone == HumanBodyBones.RightMiddleDistal ||
+                        bone == HumanBodyBones.RightMiddleIntermediate ||
+                        bone == HumanBodyBones.RightMiddleProximal ||
+                        bone == HumanBodyBones.RightRingDistal ||
+                        bone == HumanBodyBones.RightRingIntermediate ||
+                        bone == HumanBodyBones.RightRingProximal ||
+                        bone == HumanBodyBones.RightThumbDistal ||
+                        bone == HumanBodyBones.RightThumbIntermediate ||
+                        bone == HumanBodyBones.RightThumbProximal)
+                    {
+                        //指ボーン
+                        if (!HandPoseSynchronizeCutoff)
+                        {
+                            //フィルタはオフ
+                            BoneSynchronizeSingle(t, bone, pos, rot, false, false);
+                        }
+                    }
+                    else if (bone == HumanBodyBones.LeftEye ||
+                        bone == HumanBodyBones.RightEye)
+                    {
+                        //目ボーン
+                        if (!EyeBoneSynchronizeCutoff)
+                        {
+                            //フィルタはオフ
+                            BoneSynchronizeSingle(t, bone, pos, rot, false, false);
+                        }
+                    }
+                    else
+                    {
+                        BoneSynchronizeSingle(t,bone,pos,rot, BonePositionFilterEnable, BoneRotationFilterEnable);
+                    }
+                }
+            }
+        }
+    }
+
+    //1本のボーンの同期
+    private void BoneSynchronizeSingle(Transform t,HumanBodyBones bone, Vector3 pos, Quaternion rot,bool posFilter, bool rotFilter)
+    {
+        if (BonePositionSynchronize)
+        {
+            if (posFilter)
+            {
+                bonePosFilter[(int)bone] = (bonePosFilter[(int)bone] * filter) + pos * (1.0f - filter);
+                t.localPosition = bonePosFilter[(int)bone];
+            }
+            else
+            {
+                t.localPosition = pos;
+            }
+        }
+
+        if (rotFilter)
+        {
+            boneRotFilter[(int)bone] = Quaternion.Slerp(boneRotFilter[(int)bone], rot, 1.0f - filter);
+            t.localRotation = boneRotFilter[(int)bone];
+        }
+        else
+        {
+            t.localRotation = rot;
         }
     }
 
@@ -210,6 +309,16 @@ public class ExternalReceiver : MonoBehaviour
             result = default(T);
             return false;
         }
+#endif
+    }
+
+    //アプリケーションを終了させる
+    public void ApplicationQuit()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
 #endif
     }
 }
