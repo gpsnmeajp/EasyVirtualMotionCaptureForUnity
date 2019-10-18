@@ -9,12 +9,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using VRM;
 
 //[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.9")]
+    [Header("ExternalReceiver v2.9b")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
@@ -102,9 +103,11 @@ public class ExternalReceiver : MonoBehaviour
         if (blendShapeProxy == null && Model != null)
         {
             blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+            /*
             foreach (var b in blendShapeProxy.GetValues()) {
                 Debug.Log("[ExternalReceiver]" + b.Key + " / " + b.Value);
             }
+            */
         }
 
         if (Model == null)
@@ -198,6 +201,27 @@ public class ExternalReceiver : MonoBehaviour
                 VMCControlledCamera.transform.localRotation = rot;
                 VMCControlledCamera.fieldOfView = fov;
             }
+        }
+        else if (message.address == "/VMC/Ext/Con")
+        {
+            int active = (int)message.values[0];
+            string name = (string)message.values[1];
+            int IsLeft = (int)message.values[2];
+            int IsTouch = (int)message.values[3];
+            int IsAxis = (int)message.values[4];
+            Vector3 Axis = new Vector3((float)message.values[5], (float)message.values[6], (float)message.values[7]);
+
+            if (active < 2) {
+                //Debug.Log("[ExternalReceiver]Con:" + active + "/" + name + "/" + IsLeft + "/" + IsTouch + "/" + IsAxis + "/" + Axis);
+            }
+        }
+        else if (message.address == "/VMC/Ext/Key")
+        {
+            int active = (int)message.values[0];
+            string name = (string)message.values[1];
+            int keycode = (int)message.values[2];
+
+            //Debug.Log("[ExternalReceiver]Key:" + active + "/" + name + "/" + keycode);
         }
 
         //Next
