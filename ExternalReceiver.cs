@@ -40,6 +40,7 @@ public class ExternalReceiver : MonoBehaviour
     [Header("Daisy Chain")]
     public ExternalReceiver NextReceiver = null;
 
+    public bool ApplyScaleOffset = false;
 
     private Vector3[] bonePosFilter = new Vector3[Enum.GetNames(typeof(HumanBodyBones)).Length];
     private Quaternion[] boneRotFilter = new Quaternion[Enum.GetNames(typeof(HumanBodyBones)).Length];
@@ -148,6 +149,11 @@ public class ExternalReceiver : MonoBehaviour
             if (RootRotationSynchronize)
             {
                 Model.transform.localRotation = rot;
+            }
+            if (ApplyScaleOffset && message.values.Length > 8)
+            {
+                Model.transform.localScale = new Vector3(1.0f / (float)message.values[8], 1.0f / (float)message.values[9], 1.0f / (float)message.values[10]);
+                Model.transform.position -= new Vector3((float)message.values[11], (float)message.values[12], (float)message.values[13]);
             }
         }
 
