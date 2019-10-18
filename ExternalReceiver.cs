@@ -14,13 +14,14 @@ using VRM;
 //[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.8b")]
+    [Header("ExternalReceiver v2.8c")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
     public bool BlendShapeSynchronize = true;
     public bool RootPositionSynchronize = true;
     public bool RootRotationSynchronize = true;
+    public bool RootScaleOffsetSynchronize = false;
     public bool BonePositionSynchronize = true;
 
     [Header("Synchronize Cutoff Option")]
@@ -40,8 +41,6 @@ public class ExternalReceiver : MonoBehaviour
     [Header("Daisy Chain")]
     public ExternalReceiver NextReceiver = null;
 
-    public bool ApplyScaleOffset = false;
-
     private Vector3[] bonePosFilter = new Vector3[Enum.GetNames(typeof(HumanBodyBones)).Length];
     private Quaternion[] boneRotFilter = new Quaternion[Enum.GetNames(typeof(HumanBodyBones)).Length];
 
@@ -56,6 +55,8 @@ public class ExternalReceiver : MonoBehaviour
     uOSC.uOscServer server;
 
     bool shutdown = false;
+
+    const int RootPacketLengthOfScaleAndOffset = 8;
 
     void Start()
     {
@@ -150,10 +151,13 @@ public class ExternalReceiver : MonoBehaviour
             {
                 Model.transform.localRotation = rot;
             }
-            if (ApplyScaleOffset && message.values.Length > 8)
+            if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset)
             {
-                Model.transform.localScale = new Vector3(1.0f / (float)message.values[8], 1.0f / (float)message.values[9], 1.0f / (float)message.values[10]);
-                Model.transform.position -= new Vector3((float)message.values[11], (float)message.values[12], (float)message.values[13]);
+                Vector3 scale = new Vector3(1.0f / (float)message.values[8], 1.0f / (float)message.values[9], 1.0f / (float)message.values[10]);
+                Vector3 offset = new Vector3((float)message.values[11], (float)message.values[12], (float)message.values[13]);
+
+                Model.transform.localScale = scale;
+                Model.transform.position -= offset;
             }
         }
 
