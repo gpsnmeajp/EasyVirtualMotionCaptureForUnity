@@ -14,7 +14,7 @@ using VRM;
 //[RequireComponent(typeof(uOSC.uOscServer))]
 public class ExternalReceiver : MonoBehaviour
 {
-    [Header("ExternalReceiver v2.8c")]
+    [Header("ExternalReceiver v2.9")]
     public GameObject Model;
 
     [Header("Synchronize Option")]
@@ -38,6 +38,9 @@ public class ExternalReceiver : MonoBehaviour
 
     [Header("Status")]
     public string StatusMessage = "";
+    [Header("Camera Control")]
+    public Camera VMCControlledCamera;
+
     [Header("Daisy Chain")]
     public ExternalReceiver NextReceiver = null;
 
@@ -181,6 +184,19 @@ public class ExternalReceiver : MonoBehaviour
             if (BlendShapeSynchronize)
             {
                 blendShapeProxy.Apply();
+            }
+        }
+        else if (message.address == "/VMC/Ext/Cam")
+        {
+            if (VMCControlledCamera != null)
+            {
+                Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
+                Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+                float fov = (float)message.values[8];
+
+                VMCControlledCamera.transform.localPosition = pos;
+                VMCControlledCamera.transform.localRotation = rot;
+                VMCControlledCamera.fieldOfView = fov;
             }
         }
 
