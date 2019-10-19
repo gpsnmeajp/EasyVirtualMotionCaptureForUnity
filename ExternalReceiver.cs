@@ -45,7 +45,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v2.9c(indev)")]
+        [Header("ExternalReceiver v2.9d")]
         public GameObject Model;
 
         [Header("Synchronize Option")]
@@ -70,7 +70,7 @@ namespace EVMC4U
 
         public bool CameraPositionFilterEnable = false;
         public bool CameraRotationFilterEnable = false;
-        public float CameraFilter = 0.9f;
+        public float CameraFilter = 0.95f;
 
         [Header("Status")]
         [SerializeField]
@@ -79,13 +79,13 @@ namespace EVMC4U
         public Camera VMCControlledCamera;
 
         [Header("Daisy Chain")]
-        public IExternalReceiver NextReceiver = null;
+        public GameObject NextReceiver = null;
 
         [Header("Event Callback")]
         public KeyInputEvent KeyInputAction;
         public ControllerInputEvent ControllerInputAction;
 
-
+        IExternalReceiver NextReceiverInterface = null;
 
         private Vector3[] bonePosFilter = new Vector3[Enum.GetNames(typeof(HumanBodyBones)).Length];
         private Quaternion[] boneRotFilter = new Quaternion[Enum.GetNames(typeof(HumanBodyBones)).Length];
@@ -107,6 +107,10 @@ namespace EVMC4U
 
         void Start()
         {
+            if (NextReceiver != null) {
+                NextReceiverInterface = NextReceiver.GetComponent(typeof(IExternalReceiver)) as IExternalReceiver;
+            }
+
             server = GetComponent<uOSC.uOscServer>();
             if (server)
             {
@@ -185,7 +189,14 @@ namespace EVMC4U
                 }
                 else
                 {
-                    NextReceiver.MessageDaisyChain(message, callCount + 1);
+                    if (NextReceiverInterface != null)
+                    {
+                        NextReceiverInterface.MessageDaisyChain(message, callCount + 1);
+                    }
+                    else {
+                        NextReceiver = null;
+                        Debug.LogError("[ExternalReceiver] NextReceiver not implemented IExternalReceiver. set null");
+                    }
                 }
             }
         }
@@ -315,7 +326,9 @@ namespace EVMC4U
             }
             else {
                 if (StrictMode) {
-                    Debug.LogWarning("[ExternalReceiver] " + message.address + " is not valid");
+                    Debug.LogError("[ExternalReceiver] " + message.address + " is not valid");
+                    StatusMessage = "Communication error.";
+                    shutdown = true;
                 }
             }
         }
