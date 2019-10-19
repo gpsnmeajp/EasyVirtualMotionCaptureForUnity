@@ -111,7 +111,7 @@ VMCでVRMモデルを読み込んでいないとAvailableが0になります。
 通信エラー時に表示し、通信を停止します。  
 前方互換性が無くなるため通常はオフにします。  
   
-### Filter Option
+### Lowpass Filter Option
 **BonePositionFilterEnable**  
 ボーンの位置に簡易ローパスフィルタを掛けるか(既定でfalse:しない)  
 手ブレやガクつきをなくしたい場合にオンにしてください。  
@@ -136,16 +136,19 @@ VMCでVRMモデルを読み込んでいないとAvailableが0になります。
 簡易ローパスフィルタ係数(0～1:既定で0.7)  
 1に近いほど過去の影響が強くなる  
 
+### Status
 **Status Message**  
 現在の状態が表示されます
 
+### Camera Control
 **VMCControlledCamera**
 セットしたカメラはVMCのカメラと同期します。  
 カメラの位置・回転・FOVはVMCから操作する必要があります。  
 ただし相対位置として適用されるため、親コンポーネントを0,0,0に配置する必要があります。  
 (逆に言えば、これを使ってカメラの位置を制御されつつ追従するといったことが多分できます。)  
   
-**Daisy Chain**  
+### Daisy Chain
+**Next Receiver**  
 デイジーチェーンとしてデータを横流しする先を設定します。  
 対象のGameObjectにはIExternalReceiverが実装されたコンポーネントが必要です。  
   
@@ -159,7 +162,7 @@ IExternalReceiverを連結することができます。
   
 ![Daisy Chain](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/Daisy.png?raw=true)
 
-**Event Callback**  
+### Event Callback
 VMCに入力されたキー入力およびボタン入力を取得するイベントを登録します。  
 イベントスクリプトの作り方はEVMC4UInputTesting.csを参照してください。  
 
