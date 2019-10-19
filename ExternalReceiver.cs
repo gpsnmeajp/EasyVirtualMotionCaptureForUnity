@@ -17,7 +17,7 @@ namespace EVMC4U
     //デイジーチェーン受信の最低限のインターフェース
     public interface IExternalReceiver
     {
-        void MessageDaisyChain(uOSC.Message message, int callCount);
+        void MessageDaisyChain(ref uOSC.Message message, int callCount);
     }
 
     //キーボード入力情報
@@ -58,6 +58,7 @@ namespace EVMC4U
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
         public bool BonePositionSynchronize = true; //ボーン位置適用(回転は強制)
+        public uint ReceiveDivision = 1; //分周比
 
         [Header("Synchronize Cutoff Option")]
         public bool HandPoseSynchronizeCutoff = false; //指状態反映オフ
@@ -124,6 +125,23 @@ namespace EVMC4U
         //エラー・無限ループ検出フラグ(trueで一切の受信を停止する)
         bool shutdown = false;
 
+        //1連のパケットの受信回数
+        private uint ReceiveCount = 0;
+
+        //メッセージ処理一時変数(負荷対策)
+        Vector3 pos;
+        Quaternion rot;
+        Vector3 scale;
+        Vector3 offset;
+        ControllerInput con;
+        KeyInput key;
+
+        //UI用位置Rect(負荷対策)
+        readonly Rect rect1 = new Rect(0, 0, 120, 70);
+        readonly Rect rect2 = new Rect(10, 20, 100, 30);
+        readonly Rect rect3 = new Rect(10, 40, 100, 300);
+
+
         void Start()
         {
             //NextReciverのインターフェースを取得する
@@ -164,9 +182,9 @@ namespace EVMC4U
         {
             if (ShowInformation)
             {
-                GUI.TextField(new Rect(0, 0, 120, 70), "ExternalReceiver");
-                GUI.Label(new Rect(10, 20, 100, 30), "Available: " + GetAvailable());
-                GUI.Label(new Rect(10, 40, 100, 300), "Time: " + GetRemoteTime());
+                GUI.TextField(rect1, "ExternalReceiver");
+                GUI.Label(rect2, "Available: " + GetAvailable());
+                GUI.Label(rect3, "Time: " + GetRemoteTime());
             }
         }
 
@@ -196,17 +214,17 @@ namespace EVMC4U
         private void OnDataReceived(uOSC.Message message)
         {
             //チェーン数0としてデイジーチェーンを発生させる
-            MessageDaisyChain(message, 0);
+            MessageDaisyChain(ref message, 0);
         }
 
         //デイジーチェーン処理
-        public void MessageDaisyChain(uOSC.Message message, int callCount)
+        public void MessageDaisyChain(ref uOSC.Message message, int callCount)
         {
             //エラー・無限ループ時は処理をしない
             if (shutdown) { return; }
 
             //メッセージを処理
-            ProcessMessage(message);
+            ProcessMessage(ref message);
 
             //次のデイジーチェーンへ伝える
             if (NextReceiver != null)
@@ -227,7 +245,7 @@ namespace EVMC4U
                     if (NextReceiverInterface != null)
                     {
                         //Chain数を+1して次へ
-                        NextReceiverInterface.MessageDaisyChain(message, callCount + 1);
+                        NextReceiverInterface.MessageDaisyChain(ref message, callCount + 1);
                     }
                     else {
                         //GameObjectはあるがIExternalReceiverじゃないのでnullにする
@@ -239,7 +257,7 @@ namespace EVMC4U
         }
 
         //メッセージ処理本体
-        private void ProcessMessage(uOSC.Message message)
+        private void ProcessMessage(ref uOSC.Message message)
         {
             //モデルがないなら何もしない
             if (Model == null)
@@ -255,10 +273,16 @@ namespace EVMC4U
                 {
                     StatusMessage = "Waiting for [Load VRM]";
                 }
-
+                ReceiveCount = unchecked(ReceiveCount+1);
             }
+
+            //分周
+            if (ReceiveCount % ReceiveDivision != 0) {
+                return;
+            }
+
             //データ送信時刻
-            else if (message.address == "/VMC/Ext/T")
+            if (message.address == "/VMC/Ext/T")
             {
                 time = (float)message.values[0];
             }
@@ -268,8 +292,13 @@ namespace EVMC4U
             {
                 StatusMessage = "OK";
 
-                Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-                Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+                pos.x = (float)message.values[1];
+                pos.y = (float)message.values[2];
+                pos.z = (float)message.values[3];
+                rot.x = (float)message.values[4];
+                rot.y = (float)message.values[5];
+                rot.z = (float)message.values[6];
+                rot.w = (float)message.values[7];
 
                 //位置同期
                 if (RootPositionSynchronize)
@@ -284,21 +313,29 @@ namespace EVMC4U
                 //スケール同期とオフセット補正(拡張プロトコルの場合のみ)
                 if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset)
                 {
-                    Vector3 scale = new Vector3(1.0f / (float)message.values[8], 1.0f / (float)message.values[9], 1.0f / (float)message.values[10]);
-                    Vector3 offset = new Vector3((float)message.values[11], (float)message.values[12], (float)message.values[13]);
+                    scale.x = 1.0f / (float)message.values[8];
+                    scale.y = 1.0f / (float)message.values[9];
+                    scale.z = 1.0f / (float)message.values[10];
+                    offset.x = (float)message.values[11];
+                    offset.y = (float)message.values[12];
+                    offset.z = (float)message.values[13];
 
                     Model.transform.localScale = scale;
                     Model.transform.position -= offset;
                 }
             }
-
             //ボーン姿勢
             else if (message.address == "/VMC/Ext/Bone/Pos")
             {
-                Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-                Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+                pos.x = (float)message.values[1];
+                pos.y = (float)message.values[2];
+                pos.z = (float)message.values[3];
+                rot.x = (float)message.values[4];
+                rot.y = (float)message.values[5];
+                rot.z = (float)message.values[6];
+                rot.w = (float)message.values[7];
 
-                BoneSynchronize((string)message.values[0], pos, rot);
+                BoneSynchronize((string)message.values[0], ref pos, ref rot);
             }
 
             //ブレンドシェープ同期
@@ -323,8 +360,13 @@ namespace EVMC4U
                 //カメラがセットされているならば
                 if (VMCControlledCamera != null)
                 {
-                    Vector3 pos = new Vector3((float)message.values[1], (float)message.values[2], (float)message.values[3]);
-                    Quaternion rot = new Quaternion((float)message.values[4], (float)message.values[5], (float)message.values[6], (float)message.values[7]);
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
                     float fov = (float)message.values[8];
 
                     //カメラ移動フィルタ
@@ -352,13 +394,14 @@ namespace EVMC4U
             //コントローラ操作情報
             else if (message.address == "/VMC/Ext/Con")
             {
-                ControllerInput con;
                 con.active = (int)message.values[0];
                 con.name = (string)message.values[1];
                 con.IsLeft = (int)message.values[2];
                 con.IsTouch = (int)message.values[3];
                 con.IsAxis = (int)message.values[4];
-                con.Axis = new Vector3((float)message.values[5], (float)message.values[6], (float)message.values[7]);
+                con.Axis.x = (float)message.values[5];
+                con.Axis.y = (float)message.values[6];
+                con.Axis.z = (float)message.values[7];
 
                 //イベントを呼び出す
                 ControllerInputAction.Invoke(con);
@@ -366,7 +409,6 @@ namespace EVMC4U
             //キーボード操作情報
             else if (message.address == "/VMC/Ext/Key")
             {
-                KeyInput key;
                 key.active = (int)message.values[0];
                 key.name = (string)message.values[1];
                 key.keycode = (int)message.values[2];
@@ -387,10 +429,10 @@ namespace EVMC4U
         }
 
         //ボーン位置同期
-        private void BoneSynchronize(string boneName, Vector3 pos, Quaternion rot)
+        private void BoneSynchronize(string boneName, ref Vector3 pos, ref Quaternion rot)
         {
             //モデルが更新されたときに関連情報を更新する
-            if (Model != null && OldModel != Model)
+            if (OldModel != Model && Model != null)
             {
                 animator = Model.GetComponent<Animator>();
                 blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
@@ -400,7 +442,7 @@ namespace EVMC4U
 
             //Humanoidボーンに該当するボーンがあるか調べる
             HumanBodyBones bone;
-            if (HumanBodyBonesTryParse(boneName, out bone))
+            if (HumanBodyBonesTryParse(ref boneName, out bone))
             {
                 //操作可能な状態かチェック
                 if (animator != null && bone != HumanBodyBones.LastBone)
@@ -446,7 +488,7 @@ namespace EVMC4U
                             if (!HandPoseSynchronizeCutoff)
                             {
                                 //ボーン同期する。ただしフィルタはかけない
-                                BoneSynchronizeSingle(t, bone, pos, rot, false, false);
+                                BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
                             }
                         }
                         //目ボーン
@@ -457,13 +499,13 @@ namespace EVMC4U
                             if (!EyeBoneSynchronizeCutoff)
                             {
                                 //ボーン同期する。ただしフィルタはかけない
-                                BoneSynchronizeSingle(t, bone, pos, rot, false, false);
+                                BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
                             }
                         }
                         else
                         {
                             //ボーン同期する。フィルタは設定依存
-                            BoneSynchronizeSingle(t, bone, pos, rot, BonePositionFilterEnable, BoneRotationFilterEnable);
+                            BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, BonePositionFilterEnable, BoneRotationFilterEnable);
                         }
                     }
                 }
@@ -471,7 +513,7 @@ namespace EVMC4U
         }
 
         //1本のボーンの同期
-        private void BoneSynchronizeSingle(Transform t, HumanBodyBones bone, Vector3 pos, Quaternion rot, bool posFilter, bool rotFilter)
+        private void BoneSynchronizeSingle(Transform t, ref HumanBodyBones bone, ref Vector3 pos, ref Quaternion rot, bool posFilter, bool rotFilter)
         {
             //ボーン位置同期が有効か
             if (BonePositionSynchronize)
@@ -501,7 +543,7 @@ namespace EVMC4U
         }
 
         //ボーンENUM情報をキャッシュして高速化
-        private bool HumanBodyBonesTryParse(string boneName, out HumanBodyBones bone)
+        private bool HumanBodyBonesTryParse(ref string boneName, out HumanBodyBones bone)
         {
             if (HumanBodyBonesTable.ContainsKey(boneName))
             {
