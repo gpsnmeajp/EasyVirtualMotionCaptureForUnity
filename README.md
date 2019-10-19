@@ -37,7 +37,7 @@ discordサーバー: https://discord.gg/QSrDhE8
 twitter: https://twitter.com/@seg_faul  
 
 **注意！**  
-**VMCとUnityで同じVRMを読み込むようにしてください！**  
+**VMCとUnityで同じボーン位置のVRMを読み込むようにしてください！**  
 
 # 使い方
 ## ExternalReceiverPackを使う場合(かんたん)
@@ -51,11 +51,9 @@ twitter: https://twitter.com/@seg_faul
 3. Scene ViewでExternalReceiverに、読み込んだVRMのGameObjectを「Model」に割り当てる
 4. 再生して実行開始(VirtualMotionCaptureを起動してOSC送信開始状態にしてください)
 
-以下を同梱しています。
+UnityPackage内には以下を同梱しています。
 + [UniVRM-0.53.0_6b07(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
 + [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
-
-![配置例](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img6.png?raw=true)
 
 ## 一から準備する場合
 0. Unityを準備する
@@ -72,53 +70,99 @@ https://github.com/hecomi/uOSC/releases
 9. 再生して実行開始(VirtualMotionCaptureを起動して送信開始状態にしてください)
 
 ## オプション
-![オプション](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img6.png?raw=true)
+![オプション](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img7.png?raw=true)
 ### Synchronize Option
 **Blend Sharp Synchronize**  
 VRMのBlendSharp(表情・リップシンクなど)を同期するか(既定でtrue:する)  
+オンのとき、VRMのBlendSharp(表情・リップシンクなど)を同期します。  
+VRMじゃないモデルを動かしたいときや、表情などを同期したくないときにオフにします。  
 
 **RootPositionSynchronize**  
 Rootの**位置**情報を同期するか(既定でtrue:する)  
 複数体同時に動かしたり、位置を制御したい場合はfalseにすると便利です。  
+ただし、ルームスケールでの移動ができなくなり、オブジェクトの原点に固定されます。
 ※v2.8で姿勢→位置になっています  
   
 **RootRotationSynchronize**  
 Rootの**回転**情報を同期するか(既定でtrue:する)  
+ルームスケールでの回転ができなくなります。  
+カメラに常に向かせたいときなどはオフにしても構いません  
   
+**RootScaleOffsetSynchronize**
+Rootの**スケール**情報を同期するか(既定でfalse:しない)  
+MR撮影用の機能です。現実の体の大きさと同じになります。  
+
 **BonePositionSynchronize**  
 ボーンの位置情報を同期するか(既定でtrue:する)  
-  
+UnityとVMCで全く同じVRMを読み込んでいるときはオンにすると首の位置などの精度が上がります。  
+一方で、UnityとVMCでちょっとでもボーン位置が違うモデルを読み込むと酷い壊れ方をします。(指が伸びる、首が伸びるなど)  
+腰が不自然に浮く問題が発生するため、v2.6より既定でオンになりました。  
+それが気にならない場合はオフにすると違うモデルに同じ動きが適用できるようになります。  
+
 ### UI Option
 **ShowInformation**  
 通信状況表示をするか(既定でfalse:しない)
-
+VMCと通信できているか気になるときはオンにしてください。  
+VMCでVRMモデルを読み込んでいないとAvailableが0になります。
+通信が切れているとTimeが動かなくなります。  
+  
+**StrictMode**
+通信を厳密に行うか(既定でfalse:しない)  
+通信エラー時に表示し、通信を停止します。  
+前方互換性が無くなるため通常はオフにします。  
+  
 ### Filter Option
 **BonePositionFilterEnable**  
-ボーンの位置にローパスフィルタを掛けるか(既定でfalse:しない)  
+ボーンの位置に簡易ローパスフィルタを掛けるか(既定でfalse:しない)  
+手ブレやガクつきをなくしたい場合にオンにしてください。  
   
 **BoneRotationFilterEnable**  
-ボーンの回転にローパスフィルタを掛けるか(既定でfalse:しない)  
+ボーンの回転に簡易ローパスフィルタを掛けるか(既定でfalse:しない)  
+手ブレやガクつきをなくしたい場合にオンにしてください。  
   
-**filter**  
-ローパスフィルタ係数(0～1:既定で0.7)  
+**BoneFilter**  
+簡易ローパスフィルタ係数(0～1:既定で0.7)  
+1に近いほど過去の影響が強くなる  
+
+**CameraPositionFilterEnable**  
+カメラの位置に簡易ローパスフィルタを掛けるか(既定でfalse:しない)  
+手ブレやガクつきをなくしたい場合にオンにしてください。  
+  
+**CameraRotationFilterEnable**  
+カメラの回転に簡易ローパスフィルタを掛けるか(既定でfalse:しない)  
+手ブレやガクつきをなくしたい場合にオンにしてください。  
+  
+**CameraFilter**  
+簡易ローパスフィルタ係数(0～1:既定で0.7)  
 1に近いほど過去の影響が強くなる  
 
 **Status Message**  
 現在の状態が表示されます
 
+**VMCControlledCamera**
+セットしたカメラはVMCのカメラと同期します。  
+カメラの位置・回転・FOVはVMCから操作する必要があります。  
+ただし相対位置として適用されるため、親コンポーネントを0,0,0に配置する必要があります。  
+(逆に言えば、これを使ってカメラの位置を制御されつつ追従するといったことが多分できます。)  
+  
 **Daisy Chain**  
 デイジーチェーンとしてデータを横流しする先を設定します。  
+対象のGameObjectにはIExternalReceiverが実装されたコンポーネントが必要です。  
   
-**uOSC Serverを持たない**ExternalReceiverはスレーブモードで動作します。  
-これは、親となるExternalReceiverからデータを横流ししてもらうモードです。  
+**uOSC Serverを持たない**IExternalReceiverはスレーブモードで動作します。  
+これは、親となるIExternalReceiverからデータを横流ししてもらうモードです。  
   
-**uOSC Serverを持つ**ExternalReceiverから順にNextに登録することで、  
-ExternalReceiverを連結することができます。  
+**uOSC Serverを持つ**IExternalReceiverから順にNextに登録することで、  
+IExternalReceiverを連結することができます。  
 これにより、複数体のアバターを同時に動かすことができるようになります。  
-**なお、無限ループを形成しないようにご注意ください。Unityが落ちます**
+**なお、無限ループを形成しないようにご注意ください。通信が停止します**
   
 ![Daisy Chain](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/Daisy.png?raw=true)
-  
+
+**Event Callback**  
+VMCに入力されたキー入力およびボタン入力を取得するイベントを登録します。  
+イベントスクリプトの作り方はEVMC4UInputTesting.csを参照してください。  
+
 ## よくある質問
 ### なんかボーンが空中に固定される
 もしかして、Dynamic Boneとか使おうとしていませんか？  
@@ -136,43 +180,6 @@ VRMの方にApply Root Motionのチェックが入っているかを確認して
 [EasyMotionRecorder](https://github.com/duo-inc/EasyMotionRecorder)
 
 ![Root](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/img5.png?raw=true)
-
-
-### Blend Sharp Synchronizeって何？オフにしていい？  
-基本的にオンにしておいてください。  
-オンのとき、VRMのBlendSharp(表情・リップシンクなど)を同期します。  
-VRMじゃないモデルを動かしたいときや、表情などを同期したくないときにオフにします。  
-  
-### RootPositionSynchronizeって何？オフにしていい？  
-~~基本的にオンにしておいてください。  
-3点トラッキングのときはオフにして大丈夫ですが、フルトラの場合はオンにしてください。  
-オンのとき、ルームスケールの位置を同期します。  
-オフにすると、腰を中心に浮いたような挙動になり、フルトラ時にとても不自然になります。~~  
-
-オフにして構いません。
-ただし、ルームスケールでの移動ができなくなり、オブジェクトの原点に固定されます。
-
-### VRMの位置を動かしたいからRootPositionSynchronizeオフにするね！  
-~~オンにしておいてください。  
-代わりに、VRMを何らかのオブジェクトの子にし、そのオブジェクトを動かしてください。~~  
-  
-オフにして構いません。特に複数体のアバターを動かすときはオフにすると便利です。  
-
-### RootRotationSynchronizeって何？オフにしていい？  
-ルームスケールでの回転ができなくなります。  
-カメラに常に向かせたいときなどはオフにしても構いません  
-
-### BonePositionSynchronizeって何？オフにしていい？  
-UnityとVMCで全く同じVRMを読み込んでいるときはオンにすると首の位置などの精度が上がります。  
-一方で、UnityとVMCでちょっとでもボーン位置が違うモデルを読み込むと酷い壊れ方をします。(指が伸びる、首が伸びるなど)  
-~~通常は互換性のためにオフにします。~~   
-腰が不自然に浮く問題が発生するため、v2.6より既定でオンになりました。  
-
-### ShowInformationって何？オンにしていい？  
-オンにすると、通信状況がGameビューに表示されます。  
-VMCと通信できているか気になるときはオンにしてください。  
-VMCでVRMモデルを読み込んでいないとAvailableが0になります。
-通信が切れているとTimeが動かなくなります。  
 
 ### Status Messageが「Waiting for VMC...」
 VMCと通信できていないときに発生します。  
@@ -199,6 +206,12 @@ VMCの「OSCでモーション送信を有効にする」をオフにするか�
 UnityのPlayer settingから「Run in Background」を有効にすると発生しなくなります。
   
 v2.8からは強制的にRun in Backgroundが有効になり、この現象は発生しません。  
+
+### デイジーチェーンを実装した時にログを吐くとUnityが止まる
+データは大量に受信しています。Unityのログはその量には耐えられないため、表示内容は厳選してください
+
+### 重いとフィルタの掛かり方が変わる
+簡易フィルタのため、受信頻度によってフィルタの掛かり方が変わります。これは仕様です。
 
 # How to use
 ## ExternalReceiverPack (Easy)
