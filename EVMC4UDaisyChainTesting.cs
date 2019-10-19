@@ -1,4 +1,11 @@
-﻿using System.Collections;
+﻿/*
+ * ExternalReceiver
+ * https://sabowl.sakura.ne.jp/gpsnmeajp/
+ *
+ * These codes are licensed under CC0.
+ * http://creativecommons.org/publicdomain/zero/1.0/deed.ja
+ */
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using uOSC;
