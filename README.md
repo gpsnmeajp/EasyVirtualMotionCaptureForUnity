@@ -96,6 +96,9 @@ https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Option
 ## よくある質問
 https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/FAQ
 
+## トラッカーカメラの使い方
+https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/TrackerCamera
+
 # Protocol
 https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Protocol-V2
 
