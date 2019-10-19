@@ -49,7 +49,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v2.9d")]
+        [Header("ExternalReceiver v2.9d(indev)")]
         public GameObject Model;
 
         [Header("Synchronize Option")]
@@ -114,6 +114,9 @@ namespace EVMC4U
         Animator animator = null;
         //VRMのブレンドシェーププロキシ
         VRMBlendShapeProxy blendShapeProxy = null;
+
+        //ボーンENUM情報テーブル
+        Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
 
         //uOSCサーバー
         uOSC.uOscServer server;
@@ -397,7 +400,7 @@ namespace EVMC4U
 
             //Humanoidボーンに該当するボーンがあるか調べる
             HumanBodyBones bone;
-            if (EnumTryParse<HumanBodyBones>(boneName, out bone))
+            if (HumanBodyBonesTryParse(boneName, out bone))
             {
                 //操作可能な状態かチェック
                 if (animator != null && bone != HumanBodyBones.LastBone)
@@ -494,6 +497,33 @@ namespace EVMC4U
             else
             {
                 t.localRotation = rot;
+            }
+        }
+
+        //ボーンENUM情報をキャッシュして高速化
+        private bool HumanBodyBonesTryParse(string boneName, out HumanBodyBones bone)
+        {
+            if (HumanBodyBonesTable.ContainsKey(boneName))
+            {
+                bone = HumanBodyBonesTable[boneName];
+                if (bone == HumanBodyBones.LastBone) {
+                    return false;
+                }
+                return true;
+            }
+            else {
+                var res = EnumTryParse<HumanBodyBones>(boneName, out bone);
+                if (res)
+                {
+                    HumanBodyBonesTable.Add(boneName, bone);
+                    return true;
+                }
+                else {
+                    //無効なボーン
+                    bone = HumanBodyBones.LastBone;
+                    HumanBodyBonesTable.Add(boneName, bone);
+                    return false;
+                }
             }
         }
 
