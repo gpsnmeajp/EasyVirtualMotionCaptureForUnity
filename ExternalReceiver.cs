@@ -69,7 +69,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v2.9e(indev)")]
+        [Header("ExternalReceiver v2.9f")]
         public GameObject Model = null;
 
         [Header("Synchronize Option")]
