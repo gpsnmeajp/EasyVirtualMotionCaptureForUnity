@@ -29,6 +29,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.Profiling;
 using VRM;
 
 namespace EVMC4U
@@ -156,8 +157,37 @@ namespace EVMC4U
         readonly Rect rect2 = new Rect(10, 20, 100, 30);
         readonly Rect rect3 = new Rect(10, 40, 100, 300);
 
+        //負荷測定
+        CustomSampler SampleOnDataReceived;
+        CustomSampler SampleMessageDaisyChain;
+        CustomSampler SampleMessageDaisyChain_Next;
+        CustomSampler SampleProcessMessage;
+        CustomSampler SampleProcessMessage_RootPos;
+        CustomSampler SampleProcessMessage_BonePos;
+        CustomSampler SampleProcessMessage_BlendShape;
+        CustomSampler SampleProcessMessage_CameraPosFOV;
+        CustomSampler SampleProcessMessage_KeyEvent;
+        CustomSampler SampleProcessMessage_ControllerEvent;
+        CustomSampler SampleBoneSynchronize;
+        CustomSampler SampleBoneSynchronizeSingle;
+        CustomSampler SampleHumanBodyBonesTryParse;
+
         void Start()
         {
+            SampleOnDataReceived = CustomSampler.Create("OnDataReceived");
+            SampleMessageDaisyChain = CustomSampler.Create("MessageDaisyChain");
+            SampleMessageDaisyChain_Next = CustomSampler.Create("MessageDaisyChain");
+            SampleProcessMessage = CustomSampler.Create("ProcessMessage");
+            SampleProcessMessage_RootPos = CustomSampler.Create("RootPos");
+            SampleProcessMessage_BonePos = CustomSampler.Create("BonePos");
+            SampleProcessMessage_BlendShape = CustomSampler.Create("BlendShape");
+            SampleProcessMessage_CameraPosFOV = CustomSampler.Create("CameraPosFOV");
+            SampleProcessMessage_KeyEvent = CustomSampler.Create("KeyEvent");
+            SampleProcessMessage_ControllerEvent = CustomSampler.Create("ControllerEvent");
+            SampleBoneSynchronize = CustomSampler.Create("BoneSynchronize");
+            SampleBoneSynchronizeSingle = CustomSampler.Create("BoneSynchronizeSingle");
+            SampleHumanBodyBonesTryParse = CustomSampler.Create("HumanBodyBonesTryParse");
+
             //NextReciverのインターフェースを取得する
             //インターフェースではInspectorに登録できないためGameObjectにしているが、毎度GetComponentすると重いため
             if (NextReceiver != null) {
@@ -228,19 +258,26 @@ namespace EVMC4U
         private void OnDataReceived(uOSC.Message message)
         {
             //チェーン数0としてデイジーチェーンを発生させる
+            SampleOnDataReceived.Begin();
             MessageDaisyChain(ref message, 0);
+            SampleOnDataReceived.End();
         }
 
         //デイジーチェーン処理
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
         {
+            SampleMessageDaisyChain.Begin();
             //エラー・無限ループ時は処理をしない
-            if (shutdown) { return; }
+            if (shutdown) {
+                SampleMessageDaisyChain.End();
+                return;
+            }
 
             //メッセージを処理
             ProcessMessage(ref message);
 
             //次のデイジーチェーンへ伝える
+            SampleMessageDaisyChain_Next.Begin();
             if (NextReceiver != null)
             {
                 //100回以上もChainするとは考えづらい
@@ -268,21 +305,36 @@ namespace EVMC4U
                     }
                 }
             }
+            SampleMessageDaisyChain_Next.End();
+            SampleMessageDaisyChain.End();
         }
 
         //メッセージ処理本体
         private void ProcessMessage(ref uOSC.Message message)
         {
+            SampleProcessMessage.Begin();
             //メッセージアドレスがない、あるいはメッセージがない不正な形式の場合は処理しない
             if (message.address == null || message.values == null)
             {
                 StatusMessage = "Bad message.";
+
+                //厳格モード
+                if (StrictMode)
+                {
+                    //プロトコルにないアドレスを検出したら以後の処理を一切しない
+                    //ほぼデバッグ用
+                    Debug.LogError("[ExternalReceiver] null message received");
+                    shutdown = true;
+                }
+
+                SampleProcessMessage.End();
                 return;
             }
 
             //モデルがないか、姿勢が取得できないなら何もしない
             if (Model == null || Model.transform == null)
             {
+                SampleProcessMessage.End();
                 return;
             }
 
@@ -315,6 +367,8 @@ namespace EVMC4U
                 && (message.values[7] is float)
                 )
             {
+                SampleProcessMessage_RootPos.Begin();
+
                 StatusMessage = "OK";
 
                 pos.x = (float)message.values[1];
@@ -355,6 +409,8 @@ namespace EVMC4U
                     Model.transform.localScale = scale;
                     Model.transform.position -= offset;
                 }
+
+                SampleProcessMessage_RootPos.End();
             }
             //ボーン姿勢
             else if (message.address == "/VMC/Ext/Bone/Pos"
@@ -368,6 +424,8 @@ namespace EVMC4U
                 && (message.values[7] is float)
                 )
             {
+                SampleProcessMessage_BonePos.Begin();
+
                 pos.x = (float)message.values[1];
                 pos.y = (float)message.values[2];
                 pos.z = (float)message.values[3];
@@ -377,6 +435,7 @@ namespace EVMC4U
                 rot.w = (float)message.values[7];
 
                 BoneSynchronize((string)message.values[0], ref pos, ref rot);
+                SampleProcessMessage_BonePos.End();
             }
 
             //ブレンドシェープ同期
@@ -385,18 +444,26 @@ namespace EVMC4U
                 && (message.values[1] is float)
                 )
             {
+                SampleProcessMessage_BlendShape.Begin();
+
                 if (BlendShapeSynchronize && blendShapeProxy != null)
                 {
                     blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
                 }
+
+                SampleProcessMessage_BlendShape.End();
             }
             //ブレンドシェープ適用
             else if (message.address == "/VMC/Ext/Blend/Apply")
             {
+                SampleProcessMessage_BlendShape.Begin();
+
                 if (BlendShapeSynchronize && blendShapeProxy != null)
                 {
                     blendShapeProxy.Apply();
                 }
+
+                SampleProcessMessage_BlendShape.End();
             }
             //カメラ姿勢FOV同期
             else if (message.address == "/VMC/Ext/Cam"
@@ -411,6 +478,8 @@ namespace EVMC4U
                 && (message.values[8] is float)
                 )
             {
+                SampleProcessMessage_CameraPosFOV.Begin();
+
                 //カメラがセットされているならば
                 if (VMCControlledCamera != null && VMCControlledCamera.transform != null)
                 {
@@ -444,6 +513,8 @@ namespace EVMC4U
                     //FOV同期
                     VMCControlledCamera.fieldOfView = fov;
                 }
+
+                SampleProcessMessage_CameraPosFOV.End();
             }
             //コントローラ操作情報
             else if (message.address == "/VMC/Ext/Con"
@@ -457,6 +528,8 @@ namespace EVMC4U
                 && (message.values[7] is float)
                 )
             {
+                SampleProcessMessage_ControllerEvent.Begin();
+
                 con.active = (int)message.values[0];
                 con.name = (string)message.values[1];
                 con.IsLeft = (int)message.values[2];
@@ -470,6 +543,8 @@ namespace EVMC4U
                 if (ControllerInputAction != null) {
                     ControllerInputAction.Invoke(con);
                 }
+
+                SampleProcessMessage_ControllerEvent.End();
             }
             //キーボード操作情報
             else if (message.address == "/VMC/Ext/Key"
@@ -478,6 +553,8 @@ namespace EVMC4U
                 && (message.values[2] is int)
                 )
             {
+                SampleProcessMessage_KeyEvent.Begin();
+
                 key.active = (int)message.values[0];
                 key.name = (string)message.values[1];
                 key.keycode = (int)message.values[2];
@@ -486,6 +563,8 @@ namespace EVMC4U
                 if (KeyInputAction != null) {
                     KeyInputAction.Invoke(key);
                 }
+
+                SampleProcessMessage_KeyEvent.End();
             }
             else {
                 //厳格モード
@@ -497,11 +576,14 @@ namespace EVMC4U
                     shutdown = true;
                 }
             }
+            SampleProcessMessage.End();
         }
 
         //ボーン位置同期
         private void BoneSynchronize(string boneName, ref Vector3 pos, ref Quaternion rot)
         {
+            SampleBoneSynchronize.Begin();
+
             //モデルが更新されたときに関連情報を更新する
             if (OldModel != Model && Model != null)
             {
@@ -581,11 +663,14 @@ namespace EVMC4U
                     }
                 }
             }
+            SampleBoneSynchronize.End();
         }
 
         //1本のボーンの同期
         private void BoneSynchronizeSingle(Transform t, ref HumanBodyBones bone, ref Vector3 pos, ref Quaternion rot, bool posFilter, bool rotFilter)
         {
+            SampleBoneSynchronizeSingle.Begin();
+
             //ボーン位置同期が有効か
             if (BonePositionSynchronize)
             {
@@ -611,11 +696,15 @@ namespace EVMC4U
             {
                 t.localRotation = rot;
             }
+
+            SampleBoneSynchronizeSingle.End();
         }
 
         //ボーンENUM情報をキャッシュして高速化
         private bool HumanBodyBonesTryParse(ref string boneName, out HumanBodyBones bone)
         {
+            SampleHumanBodyBonesTryParse.Begin();
+
             //ボーンキャッシュテーブルに存在するなら
             if (HumanBodyBonesTable.ContainsKey(boneName))
             {
@@ -623,8 +712,12 @@ namespace EVMC4U
                 bone = HumanBodyBonesTable[boneName];
                 //ただしLastBoneは発見しなかったことにする(無効値として扱う)
                 if (bone == HumanBodyBones.LastBone) {
+
+                    SampleHumanBodyBonesTryParse.End();
                     return false;
                 }
+
+                SampleHumanBodyBonesTryParse.End();
                 return true;
             }
             else {
@@ -637,6 +730,8 @@ namespace EVMC4U
                 }
                 //キャシュテーブルに登録する
                 HumanBodyBonesTable.Add(boneName, bone);
+
+                SampleHumanBodyBonesTryParse.End();
                 return res;
             }
         }
