@@ -106,8 +106,8 @@ https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Protocol-V2
 https://github.com/gpsnmeajp/VirtualMotionCapture/blob/v0.22basefix/Assets/ExternalSender/ExternalSender.cs
 
 # Licence
-CC0  
-http://creativecommons.org/publicdomain/zero/1.0/deed.ja  
+MIT Licence  
+(CC0ライセンスから変更)  
 
 # 作者
 gpsnmeajp  
