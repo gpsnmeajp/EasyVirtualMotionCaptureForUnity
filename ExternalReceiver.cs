@@ -68,8 +68,8 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v2.9d(indev)")]
-        public GameObject Model;
+        [Header("ExternalReceiver v2.9e(indev)")]
+        public GameObject Model = null;
 
         [Header("Synchronize Option")]
         public bool BlendShapeSynchronize = true; //表情等同期
@@ -77,7 +77,6 @@ namespace EVMC4U
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
         public bool BonePositionSynchronize = true; //ボーン位置適用(回転は強制)
-        public uint ReceiveDivision = 1; //分周比
 
         [Header("Synchronize Cutoff Option")]
         public bool HandPoseSynchronizeCutoff = false; //指状態反映オフ
@@ -100,14 +99,14 @@ namespace EVMC4U
         [SerializeField]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
         [Header("Camera Control")]
-        public Camera VMCControlledCamera; //VMCカメラ制御同期
+        public Camera VMCControlledCamera = null; //VMCカメラ制御同期
 
         [Header("Daisy Chain")]
         public GameObject NextReceiver = null; //デイジーチェーン
 
         [Header("Event Callback")]
-        public KeyInputEvent KeyInputAction; //キーボード入力イベント
-        public ControllerInputEvent ControllerInputAction; //コントローラボタンイベント
+        public KeyInputEvent KeyInputAction = new KeyInputEvent(); //キーボード入力イベント
+        public ControllerInputEvent ControllerInputAction = new ControllerInputEvent(); //コントローラボタンイベント
 
         //---Const---
 
@@ -139,15 +138,12 @@ namespace EVMC4U
         Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
 
         //uOSCサーバー
-        uOSC.uOscServer server;
+        uOSC.uOscServer server = null;
 
         //エラー・無限ループ検出フラグ(trueで一切の受信を停止する)
         bool shutdown = false;
 
-        //1連のパケットの受信回数
-        private uint ReceiveCount = 0;
-
-        //メッセージ処理一時変数(負荷対策)
+        //メッセージ処理一時変数struct(負荷対策)
         Vector3 pos;
         Quaternion rot;
         Vector3 scale;
@@ -159,7 +155,6 @@ namespace EVMC4U
         readonly Rect rect1 = new Rect(0, 0, 120, 70);
         readonly Rect rect2 = new Rect(10, 20, 100, 30);
         readonly Rect rect3 = new Rect(10, 40, 100, 300);
-
 
         void Start()
         {
@@ -278,36 +273,47 @@ namespace EVMC4U
         //メッセージ処理本体
         private void ProcessMessage(ref uOSC.Message message)
         {
-            //モデルがないなら何もしない
-            if (Model == null)
+            //メッセージアドレスがない、あるいはメッセージがない不正な形式の場合は処理しない
+            if (message.address == null || message.values == null)
+            {
+                StatusMessage = "Bad message.";
+                return;
+            }
+
+            //モデルがないか、姿勢が取得できないなら何もしない
+            if (Model == null || Model.transform == null)
             {
                 return;
             }
 
             //モーションデータ送信可否
-            if (message.address == "/VMC/Ext/OK")
+            if (message.address == "/VMC/Ext/OK"
+                && (message.values[0] is int))
             {
                 Available = (int)message.values[0];
                 if (Available == 0)
                 {
                     StatusMessage = "Waiting for [Load VRM]";
                 }
-                ReceiveCount = unchecked(ReceiveCount+1);
             }
-
-            //分周
-            if (ReceiveCount % ReceiveDivision != 0) {
-                return;
-            }
-
             //データ送信時刻
-            if (message.address == "/VMC/Ext/T")
+            else if (message.address == "/VMC/Ext/T"
+                && (message.values[0] is float))
             {
                 time = (float)message.values[0];
             }
 
             //Root姿勢
-            else if (message.address == "/VMC/Ext/Root/Pos")
+            else if (message.address == "/VMC/Ext/Root/Pos"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
             {
                 StatusMessage = "OK";
 
@@ -330,7 +336,14 @@ namespace EVMC4U
                     Model.transform.localRotation = rot;
                 }
                 //スケール同期とオフセット補正(拡張プロトコルの場合のみ)
-                if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset)
+                if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset
+                    && (message.values[8] is float)
+                    && (message.values[9] is float)
+                    && (message.values[10] is float)
+                    && (message.values[11] is float)
+                    && (message.values[12] is float)
+                    && (message.values[13] is float)
+                    )
                 {
                     scale.x = 1.0f / (float)message.values[8];
                     scale.y = 1.0f / (float)message.values[9];
@@ -344,7 +357,16 @@ namespace EVMC4U
                 }
             }
             //ボーン姿勢
-            else if (message.address == "/VMC/Ext/Bone/Pos")
+            else if (message.address == "/VMC/Ext/Bone/Pos"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
             {
                 pos.x = (float)message.values[1];
                 pos.y = (float)message.values[2];
@@ -358,9 +380,12 @@ namespace EVMC4U
             }
 
             //ブレンドシェープ同期
-            else if (message.address == "/VMC/Ext/Blend/Val")
+            else if (message.address == "/VMC/Ext/Blend/Val"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                )
             {
-                if (BlendShapeSynchronize)
+                if (BlendShapeSynchronize && blendShapeProxy != null)
                 {
                     blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
                 }
@@ -368,16 +393,26 @@ namespace EVMC4U
             //ブレンドシェープ適用
             else if (message.address == "/VMC/Ext/Blend/Apply")
             {
-                if (BlendShapeSynchronize)
+                if (BlendShapeSynchronize && blendShapeProxy != null)
                 {
                     blendShapeProxy.Apply();
                 }
             }
             //カメラ姿勢FOV同期
-            else if (message.address == "/VMC/Ext/Cam")
+            else if (message.address == "/VMC/Ext/Cam"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                && (message.values[8] is float)
+                )
             {
                 //カメラがセットされているならば
-                if (VMCControlledCamera != null)
+                if (VMCControlledCamera != null && VMCControlledCamera.transform != null)
                 {
                     pos.x = (float)message.values[1];
                     pos.y = (float)message.values[2];
@@ -411,7 +446,16 @@ namespace EVMC4U
                 }
             }
             //コントローラ操作情報
-            else if (message.address == "/VMC/Ext/Con")
+            else if (message.address == "/VMC/Ext/Con"
+                && (message.values[0] is int)
+                && (message.values[1] is string)
+                && (message.values[2] is int)
+                && (message.values[3] is int)
+                && (message.values[4] is int)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
             {
                 con.active = (int)message.values[0];
                 con.name = (string)message.values[1];
@@ -423,17 +467,25 @@ namespace EVMC4U
                 con.Axis.z = (float)message.values[7];
 
                 //イベントを呼び出す
-                ControllerInputAction.Invoke(con);
+                if (ControllerInputAction != null) {
+                    ControllerInputAction.Invoke(con);
+                }
             }
             //キーボード操作情報
-            else if (message.address == "/VMC/Ext/Key")
+            else if (message.address == "/VMC/Ext/Key"
+                && (message.values[0] is int)
+                && (message.values[1] is string)
+                && (message.values[2] is int)
+                )
             {
                 key.active = (int)message.values[0];
                 key.name = (string)message.values[1];
                 key.keycode = (int)message.values[2];
 
                 //イベントを呼び出す
-                KeyInputAction.Invoke(key);
+                if (KeyInputAction != null) {
+                    KeyInputAction.Invoke(key);
+                }
             }
             else {
                 //厳格モード
@@ -564,27 +616,28 @@ namespace EVMC4U
         //ボーンENUM情報をキャッシュして高速化
         private bool HumanBodyBonesTryParse(ref string boneName, out HumanBodyBones bone)
         {
+            //ボーンキャッシュテーブルに存在するなら
             if (HumanBodyBonesTable.ContainsKey(boneName))
             {
+                //キャッシュテーブルから返す
                 bone = HumanBodyBonesTable[boneName];
+                //ただしLastBoneは発見しなかったことにする(無効値として扱う)
                 if (bone == HumanBodyBones.LastBone) {
                     return false;
                 }
                 return true;
             }
             else {
+                //キャッシュテーブルにない場合、検索する
                 var res = EnumTryParse<HumanBodyBones>(boneName, out bone);
-                if (res)
+                if (!res)
                 {
-                    HumanBodyBonesTable.Add(boneName, bone);
-                    return true;
-                }
-                else {
-                    //無効なボーン
+                    //見つからなかった場合はLastBoneとして登録する(無効値として扱う)ことにより次回から検索しない
                     bone = HumanBodyBones.LastBone;
-                    HumanBodyBonesTable.Add(boneName, bone);
-                    return false;
                 }
+                //キャシュテーブルに登録する
+                HumanBodyBonesTable.Add(boneName, bone);
+                return res;
             }
         }
 

@@ -27,22 +27,25 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using uOSC;
+
 
 namespace EVMC4U
 {
-    public class EVMC4UDaisyChainTesting : MonoBehaviour, EVMC4U.IExternalReceiver
+    public class EVMC4UAddComponentTest : MonoBehaviour
     {
-        //デイジーチェーンテスト
-        public void MessageDaisyChain(ref Message message, int callCount)
-        {
-            if (message.address == "/VMC/Ext/T")
-            {
-                Debug.Log(message.address + "[" + (float)message.values[0] + "]");
-            }
+        public GameObject Model;
 
-            //メッセージ全部Logに出そうとか考えないこと。Unityが死ぬほど送られてきます。
+        // Use this for initialization
+        void Start()
+        {
+            var x = gameObject.AddComponent<EVMC4U.ExternalReceiver>();
+            x.Model = Model;
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+
         }
     }
-
 }
