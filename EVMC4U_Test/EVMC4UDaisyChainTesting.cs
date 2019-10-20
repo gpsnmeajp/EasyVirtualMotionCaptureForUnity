@@ -31,7 +31,7 @@ using uOSC;
 
 public class EVMC4UDaisyChainTesting : MonoBehaviour,EVMC4U.IExternalReceiver {
     //デイジーチェーンテスト
-    public void MessageDaisyChain(Message message, int callCount)
+    public void MessageDaisyChain(ref Message message, int callCount)
     {
         if (message.address == "/VMC/Ext/T") {
             Debug.Log(message.address + "[" + (float)message.values[0] + "]");
