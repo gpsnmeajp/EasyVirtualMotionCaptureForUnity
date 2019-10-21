@@ -1,4 +1,4 @@
-![icon](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true)
+<img width="320px" src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true"></img>
 # EVMC4U - EasyVirtualMotionCaptureForUnity
 VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。   
   
