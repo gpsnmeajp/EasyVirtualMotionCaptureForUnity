@@ -8,10 +8,8 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 
 ハッシュタグは[#EVMC4U](https://twitter.com/search?q=%23EVMC4U%20)
 
-# 説明書とダウンロード方法
-[説明書・ダウンロードリンクはこちらです](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
-
-# お問合せ先
+# [説明書とダウンロード方法](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
+# [お問合せ先](https://discord.gg/QSrDhE8)
 **バーチャルモーションキャプチャーとはサポート窓口が違いますのでご注意ください。  
 (作者が違います)**
 
