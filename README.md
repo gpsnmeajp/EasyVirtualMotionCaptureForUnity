@@ -19,6 +19,10 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 MIT Licence  
 (CC0ライセンスから変更)  
 
+以下のライブラリに依存しています。  
++ [UniVRM-0.53.0_6b07(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
++ [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
+
 # 作者
 gpsnmeajp  
 https://sabowl.sakura.ne.jp/gpsnmeajp/  
