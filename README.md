@@ -23,7 +23,7 @@ MIT Licence
 (CC0ライセンスから変更)  
 
 以下のライブラリに依存しています。  
-+ [UniVRM-0.53.0_6b07(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
++ [UniVRM-0.53.0_6b07 - UniVRM, UniGLTF, UniHumanoid, MToon(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
 + [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
 
 # 作者
