@@ -12,7 +12,7 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 [説明書はこちらです](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
 
 # お問合せ先
-[discordサーバー **(推奨)**](https://discord.gg/QSrDhE8)
+[discordサーバー **(推奨)**](https://discord.gg/QSrDhE8)  
 [twitter **(非推奨:到達の確実性のためリプライではなくDMでお願いします)**](https://twitter.com/@seg_faul)  
 
 # Licence
