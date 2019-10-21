@@ -1,6 +1,6 @@
 ![icon](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true)
-# EasyVirtualMotionCaptureForUnity(ExternalReceiver)
-VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映します。  
+# EVMC4U - EasyVirtualMotionCaptureForUnity
+VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。   
   
 あなたのUnityシーンをUnityPackage1つで全身トラッキング対応にできます。  
 トラッキング品質は安心と信頼のバーチャルモーションキャプチャー同等。  
