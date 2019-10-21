@@ -33,8 +33,12 @@ namespace EVMC4U
     [RequireComponent(typeof(EVMC4U.ExternalReceiver))]
     public class EVMC4U_HandCatch : MonoBehaviour
     {
+        //表示オンオフ
         public bool ShowCollider = true;
         bool ShowColliderOld = true;
+
+        public float NonHoldFilter = 0f;
+        public float InHoldFilter = 0.90f;
 
         ExternalReceiver exrcv;
 
@@ -56,6 +60,11 @@ namespace EVMC4U
             exrcv = GetComponent<EVMC4U.ExternalReceiver>();
             exrcv.ControllerInputAction.AddListener(ControllerInputEvent);
             exrcv.KeyInputAction.AddListener(KeyInputEvent);
+
+            //ブレ防止用にフィルタを設定
+            exrcv.BonePositionFilterEnable = true;
+            exrcv.BoneRotationFilterEnable = true;
+            exrcv.BoneFilter = NonHoldFilter;
 
             //手のボーンを取得
             var anim = exrcv.Model.GetComponent<Animator>();
@@ -125,6 +134,9 @@ namespace EVMC4U
                     //手を親に、解除用に保持
                     leftCatchedObject = leftHelper.other.gameObject;
                     leftCatchedObject.transform.parent = leftSphere.transform;
+
+                    //フィルタ強く
+                    exrcv.BoneFilter = InHoldFilter;
                 }
             }
             else
@@ -133,6 +145,9 @@ namespace EVMC4U
                 {
                     //解除
                     leftCatchedObject.transform.parent = null;
+
+                    //フィルタ解除
+                    exrcv.BoneFilter = NonHoldFilter;
                 }
             }
         }
@@ -146,6 +161,9 @@ namespace EVMC4U
                     //手を親に、解除用に保持
                     rightCatchedObject = rightHelper.other.gameObject;
                     rightCatchedObject.transform.parent = rightSphere.transform;
+
+                    //フィルタ強く
+                    exrcv.BoneFilter = InHoldFilter;
                 }
             }
             else
@@ -154,6 +172,9 @@ namespace EVMC4U
                 {
                     //解除
                     rightCatchedObject.transform.parent = null;
+
+                    //フィルタ解除
+                    exrcv.BoneFilter = NonHoldFilter;
                 }
             }
         }
