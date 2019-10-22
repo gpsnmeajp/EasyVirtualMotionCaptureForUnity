@@ -73,7 +73,8 @@ namespace EVMC4U
 
             //左手当たり判定スフィア生成
             leftSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            leftSphere.transform.position = new Vector3(leftHand.position.x - 0.12f, leftHand.position.y, leftHand.position.z);
+            leftSphere.transform.parent = leftHand;
+            leftSphere.transform.localPosition = new Vector3(-0.12f, 0f, 0f);
             leftSphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
             //左手当たり判定スフィアコライダー設定
@@ -91,7 +92,8 @@ namespace EVMC4U
 
             //右手当たり判定スフィア生成
             rightSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            rightSphere.transform.position = new Vector3(rightHand.position.x + 0.12f, rightHand.position.y, rightHand.position.z);
+            rightSphere.transform.parent = rightHand;
+            rightSphere.transform.localPosition = new Vector3(0.12f, 0f, 0f);
             rightSphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
 
             //右手当たり判定スフィアコライダー設定
@@ -112,7 +114,9 @@ namespace EVMC4U
         {
             //剥がれ防止で親を設定
             leftSphere.transform.parent = leftHand;
+            leftSphere.transform.localPosition = new Vector3(-0.12f, 0f, 0f);
             rightSphere.transform.parent = rightHand;
+            rightSphere.transform.localPosition = new Vector3(0.12f, 0f, 0f);
 
             //表示非表示を反映
             if (ShowColliderOld != ShowCollider) {
