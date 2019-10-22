@@ -69,14 +69,17 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v2.9f")]
+        [Header("ExternalReceiver v3.0")]
         public GameObject Model = null;
 
-        [Header("Synchronize Option")]
-        public bool BlendShapeSynchronize = true; //表情等同期
+        [Header("Root Synchronize Option")]
+        public Transform RootTransform = null;
         public bool RootPositionSynchronize = true; //ルート座標同期(ルームスケール移動)
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
+
+        [Header("Other Synchronize Option")]
+        public bool BlendShapeSynchronize = true; //表情等同期
         public bool BonePositionSynchronize = true; //ボーン位置適用(回転は強制)
 
         [Header("Synchronize Cutoff Option")]
@@ -246,6 +249,13 @@ namespace EVMC4U
                 blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
             }
 
+            //ルート姿勢がない場合
+            if (RootTransform == null && Model != null)
+            {
+                //モデル姿勢をルート姿勢にする
+                RootTransform = Model.transform;
+            }
+
             //モデルがない場合はエラー表示をしておく(親切心)
             if (Model == null)
             {
@@ -331,8 +341,15 @@ namespace EVMC4U
                 return;
             }
 
-            //モデルがないか、姿勢が取得できないなら何もしない
-            if (Model == null || Model.transform == null)
+            //ルート姿勢がない場合
+            if (RootTransform == null && Model != null)
+            {
+                //モデル姿勢をルート姿勢にする
+                RootTransform = Model.transform;
+            }
+
+            //モデルがないか、モデル姿勢、ルート姿勢が取得できないなら何もしない
+            if (Model == null || Model.transform == null || RootTransform == null)
             {
                 SampleProcessMessage.End();
                 return;
@@ -382,12 +399,12 @@ namespace EVMC4U
                 //位置同期
                 if (RootPositionSynchronize)
                 {
-                    Model.transform.localPosition = pos;
+                    RootTransform.localPosition = pos;
                 }
                 //回転同期
                 if (RootRotationSynchronize)
                 {
-                    Model.transform.localRotation = rot;
+                    RootTransform.localRotation = rot;
                 }
                 //スケール同期とオフセット補正(拡張プロトコルの場合のみ)
                 if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset
@@ -406,8 +423,8 @@ namespace EVMC4U
                     offset.y = (float)message.values[12];
                     offset.z = (float)message.values[13];
 
-                    Model.transform.localScale = scale;
-                    Model.transform.position -= offset;
+                    RootTransform.localScale = scale;
+                    RootTransform.position -= offset;
                 }
 
                 SampleProcessMessage_RootPos.End();
