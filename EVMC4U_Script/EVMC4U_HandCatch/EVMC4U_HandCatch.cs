@@ -40,6 +40,10 @@ namespace EVMC4U
         public float NonHoldFilter = 0f;
         public float InHoldFilter = 0.90f;
 
+        public string CollisionTag = "";
+
+        public float SpeedMultiplier = 1.0f;
+
         ExternalReceiver exrcv;
 
         Transform leftHand;
@@ -48,11 +52,25 @@ namespace EVMC4U
         GameObject leftSphere;
         GameObject rightSphere;
 
+        Rigidbody leftRigidBody;
+        Rigidbody rightRigidBody;
+
+        Vector3 leftLastPos;
+        Vector3 rightLastPos;
+        Vector3 leftLastSpeed;
+        Vector3 rightLastSpeed;
+
         EVMC4U_HandCatch_Helper leftHelper;
         EVMC4U_HandCatch_Helper rightHelper;
 
         GameObject leftCatchedObject;
         GameObject rightCatchedObject;
+
+        bool leftCatchedObjectIsKinematic;
+        bool rightCatchedObjectIsKinematic;
+
+        Transform leftCatchedObjectParent;
+        Transform rightCatchedObjectParent;
 
         void Start()
         {
@@ -83,7 +101,7 @@ namespace EVMC4U
             leftCollider.isTrigger = true;
 
             //左手当たり判定物理演算追加
-            var leftRigidBody = leftSphere.AddComponent<Rigidbody>();
+            leftRigidBody = leftSphere.AddComponent<Rigidbody>();
             //物理は反応のみで演算しない
             leftRigidBody.isKinematic = true;
 
@@ -102,7 +120,7 @@ namespace EVMC4U
             rightCollider.isTrigger = true;
 
             //右手当たり判定物理演算追加
-            var rightRigidBody = rightSphere.AddComponent<Rigidbody>();
+            rightRigidBody = rightSphere.AddComponent<Rigidbody>();
             //物理は反応のみで演算しない
             rightRigidBody.isKinematic = true;
 
@@ -110,7 +128,8 @@ namespace EVMC4U
             rightHelper = rightSphere.AddComponent<EVMC4U_HandCatch_Helper>();
         }
 
-        void Update()
+        //物理演算のためFixedUpdate
+        void FixedUpdate()
         {
             //剥がれ防止で親を設定
             leftSphere.transform.parent = leftHand;
@@ -125,6 +144,12 @@ namespace EVMC4U
 
                 ShowColliderOld = ShowCollider;
             }
+
+            //投げるとき用にフレーム間速度を求める
+            leftLastSpeed = SpeedMultiplier * (leftHand.transform.position - leftLastPos)/Time.fixedDeltaTime;
+            leftLastPos = leftHand.transform.position;
+            rightLastSpeed = SpeedMultiplier * (rightHand.transform.position - rightLastPos)/Time.fixedDeltaTime;
+            rightLastPos = rightHand.transform.position;
         }
 
         //左手掴む処理
@@ -135,9 +160,28 @@ namespace EVMC4U
                 //つかみ処理
                 if (leftHelper.Trigger && leftHelper.other != null)
                 {
-                    //手を親に、解除用に保持
+                    //コリジョンタグになにか文字が入っていて、対象と一致しない場合は処理しない
+                    if (CollisionTag != "" && CollisionTag != leftHelper.other.tag) {
+                        return;
+                    }
+
+                    //解除用に保持
                     leftCatchedObject = leftHelper.other.gameObject;
+
+                    //親を保存
+                    leftCatchedObjectParent = leftCatchedObject.transform.parent;
+
+                    //手を親に上書き
                     leftCatchedObject.transform.parent = leftSphere.transform;
+
+                    //掴むために物理演算を切る
+                    var rigid = leftCatchedObject.GetComponent<Rigidbody>();
+                    if (rigid != null) {
+                        //IsKinematicを保存
+                        leftCatchedObjectIsKinematic = rigid.isKinematic;
+                        //設定に関わらずtrueにする
+                        rigid.isKinematic = true;
+                    }
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
@@ -147,8 +191,19 @@ namespace EVMC4U
             {
                 if (leftCatchedObject != null)
                 {
-                    //解除
-                    leftCatchedObject.transform.parent = null;
+                    //解除して親に戻す
+                    leftCatchedObject.transform.parent = leftCatchedObjectParent;
+
+                    //掴むために物理演算を切る
+                    var rigid = leftCatchedObject.GetComponent<Rigidbody>();
+                    if (rigid != null)
+                    {
+                        //IsKinematicを保存していた設定にする
+                        rigid.isKinematic = leftCatchedObjectIsKinematic;
+
+                        //投げるために速度を転送する
+                        rigid.velocity = leftLastSpeed;
+                    }
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
@@ -162,9 +217,30 @@ namespace EVMC4U
             {
                 if (rightHelper.Trigger && rightHelper.other != null)
                 {
-                    //手を親に、解除用に保持
+                    //コリジョンタグになにか文字が入っていて、対象と一致しない場合は処理しない
+                    if (CollisionTag != "" && CollisionTag != rightHelper.other.tag)
+                    {
+                        return;
+                    }
+
+                    //解除用に保持
                     rightCatchedObject = rightHelper.other.gameObject;
+
+                    //親を保存
+                    rightCatchedObjectParent = rightCatchedObject.transform.parent;
+
+                    //手を親に上書き
                     rightCatchedObject.transform.parent = rightSphere.transform;
+
+                    //掴むために物理演算を切る
+                    var rigid = rightCatchedObject.GetComponent<Rigidbody>();
+                    if (rigid != null)
+                    {
+                        //IsKinematicを保存
+                        rightCatchedObjectIsKinematic = rigid.isKinematic;
+                        //設定に関わらずtrueにする
+                        rigid.isKinematic = true;
+                    }
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
@@ -174,8 +250,20 @@ namespace EVMC4U
             {
                 if (rightCatchedObject != null)
                 {
-                    //解除
-                    rightCatchedObject.transform.parent = null;
+                    //解除して親に戻す
+                    rightCatchedObject.transform.parent = rightCatchedObjectParent;
+
+                    //掴むために物理演算を切る
+                    var rigid = rightCatchedObject.GetComponent<Rigidbody>();
+                    if (rigid != null)
+                    {
+                        //IsKinematicを保存していた設定にする
+                        rigid.isKinematic = rightCatchedObjectIsKinematic;
+
+                        Debug.Log(rightRigidBody.velocity);
+                        //投げるために速度を転送する
+                        rigid.velocity = rightLastSpeed;
+                    }
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
