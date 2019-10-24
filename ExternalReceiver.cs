@@ -112,6 +112,11 @@ namespace EVMC4U
         public KeyInputEvent KeyInputAction = new KeyInputEvent(); //キーボード入力イベント
         public ControllerInputEvent ControllerInputAction = new ControllerInputEvent(); //コントローラボタンイベント
 
+
+        public Transform TestPos1;
+        public Transform TestPos2;
+        public Transform TestPos3;
+
         //---Const---
 
         //rootパケット長定数(拡張判別)
@@ -406,7 +411,7 @@ namespace EVMC4U
                 {
                     RootTransform.localRotation = rot;
                 }
-                //スケール同期とオフセット補正(拡張プロトコルの場合のみ)
+                //スケール同期とオフセット補正(v2.1拡張プロトコルの場合のみ)
                 if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset
                     && (message.values[8] is float)
                     && (message.values[9] is float)
@@ -482,7 +487,7 @@ namespace EVMC4U
 
                 SampleProcessMessage_BlendShape.End();
             }
-            //カメラ姿勢FOV同期
+            //カメラ姿勢FOV同期 v2.1
             else if (message.address == "/VMC/Ext/Cam"
                 && (message.values[0] is string)
                 && (message.values[1] is float)
@@ -533,7 +538,7 @@ namespace EVMC4U
 
                 SampleProcessMessage_CameraPosFOV.End();
             }
-            //コントローラ操作情報
+            //コントローラ操作情報 v2.1
             else if (message.address == "/VMC/Ext/Con"
                 && (message.values[0] is int)
                 && (message.values[1] is string)
@@ -563,7 +568,7 @@ namespace EVMC4U
 
                 SampleProcessMessage_ControllerEvent.End();
             }
-            //キーボード操作情報
+            //キーボード操作情報 v2.1
             else if (message.address == "/VMC/Ext/Key"
                 && (message.values[0] is int)
                 && (message.values[1] is string)
@@ -577,13 +582,116 @@ namespace EVMC4U
                 key.keycode = (int)message.values[2];
 
                 //イベントを呼び出す
-                if (KeyInputAction != null) {
+                if (KeyInputAction != null)
+                {
                     KeyInputAction.Invoke(key);
                 }
 
                 SampleProcessMessage_KeyEvent.End();
             }
-            else {
+            // v2.2
+            else if (message.address == "/VMC/Ext/Midi/Note"
+                && (message.values[0] is int)
+                && (message.values[1] is int)
+                && (message.values[2] is int)
+                && (message.values[3] is float)
+                )
+            {
+                Debug.Log("Note " + (int)message.values[0] + "/" + (int)message.values[1] + "/" + (int)message.values[2] + "/" + (float)message.values[3]);
+            }
+            // v2.2
+            else if (message.address == "/VMC/Ext/Midi/CC/Val"
+                && (message.values[0] is int)
+                && (message.values[1] is float)
+                )
+            {
+                Debug.Log("CC Val " + (int)message.values[0] + "/" + (float)message.values[1]);
+            }
+            // v2.2
+            else if (message.address == "/VMC/Ext/Midi/CC/Bit"
+                && (message.values[0] is int)
+                && (message.values[1] is int)
+                )
+            {
+                Debug.Log("CC Bit " + (int)message.values[0] + "/" + (int)message.values[1]);
+            }
+            // v2.2
+            else if (message.address == "/VMC/Ext/Hmd/Pos"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
+            {
+                pos.x = (float)message.values[1];
+                pos.y = (float)message.values[2];
+                pos.z = (float)message.values[3];
+                rot.x = (float)message.values[4];
+                rot.y = (float)message.values[5];
+                rot.z = (float)message.values[6];
+                rot.w = (float)message.values[7];
+
+                TestPos1.position = pos;
+                TestPos1.rotation = rot;
+
+                Debug.Log("HMD pos "+ (string)message.values[0] +" : "+ pos+"/"+rot);
+            }
+            // v2.2
+            else if (message.address == "/VMC/Ext/Con/Pos"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
+            {
+                pos.x = (float)message.values[1];
+                pos.y = (float)message.values[2];
+                pos.z = (float)message.values[3];
+                rot.x = (float)message.values[4];
+                rot.y = (float)message.values[5];
+                rot.z = (float)message.values[6];
+                rot.w = (float)message.values[7];
+
+                TestPos2.position = pos;
+                TestPos2.rotation = rot;
+
+                Debug.Log("Con pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+            }
+            // v2.2
+            else if (message.address == "/VMC/Ext/Tra/Pos"
+                && (message.values[0] is string)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float)
+                && (message.values[4] is float)
+                && (message.values[5] is float)
+                && (message.values[6] is float)
+                && (message.values[7] is float)
+                )
+            {
+                pos.x = (float)message.values[1];
+                pos.y = (float)message.values[2];
+                pos.z = (float)message.values[3];
+                rot.x = (float)message.values[4];
+                rot.y = (float)message.values[5];
+                rot.z = (float)message.values[6];
+                rot.w = (float)message.values[7];
+
+                TestPos3.position = pos;
+                TestPos3.rotation = rot;
+
+                Debug.Log("Tra pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+            }
+            else
+            {
                 //厳格モード
                 if (StrictMode) {
                     //プロトコルにないアドレスを検出したら以後の処理を一切しない
