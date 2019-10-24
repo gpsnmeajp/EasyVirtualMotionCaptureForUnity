@@ -59,11 +59,41 @@ namespace EVMC4U
         public Vector3 Axis;
     }
 
+    //MIDI Note入力情報
+    public struct MidiNote
+    {
+        public int active;
+        public int channel;
+        public int note;
+        public float velocity;
+    }
+
+    //MIDI CC Value入力情報
+    public struct MidiCCValue
+    {
+        public int knob;
+        public float value;
+    }
+
+    //MIDI CC Button入力情報
+    public struct MidiCCButton
+    {
+        public int knob;
+        public float active;
+    }
+
+
     //イベント定義
     [Serializable]
     public class KeyInputEvent : UnityEvent<KeyInput> { };
     [Serializable]
     public class ControllerInputEvent : UnityEvent<ControllerInput> { };
+    [Serializable]
+    public class MidiNoteInputEvent : UnityEvent<MidiNote> { };
+    [Serializable]
+    public class MidiCCValueInputEvent : UnityEvent<MidiCCValue> { };
+    [Serializable]
+    public class MidiCCButtonInputEvent : UnityEvent<MidiCCButton> { };
 
 
     //[RequireComponent(typeof(uOSC.uOscServer))]
@@ -111,6 +141,9 @@ namespace EVMC4U
         [Header("Event Callback")]
         public KeyInputEvent KeyInputAction = new KeyInputEvent(); //キーボード入力イベント
         public ControllerInputEvent ControllerInputAction = new ControllerInputEvent(); //コントローラボタンイベント
+        public MidiNoteInputEvent MidiNoteInputAction = new MidiNoteInputEvent();
+        public MidiCCValueInputEvent MidiCCValueInputAction = new MidiCCValueInputEvent();
+        public MidiCCButtonInputEvent MidiCCButtonInputAction = new MidiCCButtonInputEvent();
 
 
         public Transform TestPos1;
@@ -159,6 +192,9 @@ namespace EVMC4U
         Vector3 offset;
         ControllerInput con;
         KeyInput key;
+        MidiNote note;
+        MidiCCValue ccvalue;
+        MidiCCButton ccbutton;
 
         //UI用位置Rect(負荷対策)
         readonly Rect rect1 = new Rect(0, 0, 120, 70);
@@ -597,6 +633,17 @@ namespace EVMC4U
                 && (message.values[3] is float)
                 )
             {
+                note.active = (int)message.values[0];
+                note.channel = (int)message.values[1];
+                note.note = (int)message.values[2];
+                note.velocity = (float)message.values[3];
+
+                //イベントを呼び出す
+                if (MidiNoteInputAction != null)
+                {
+                    MidiNoteInputAction.Invoke(note);
+                }
+
                 Debug.Log("Note " + (int)message.values[0] + "/" + (int)message.values[1] + "/" + (int)message.values[2] + "/" + (float)message.values[3]);
             }
             // v2.2
@@ -605,6 +652,15 @@ namespace EVMC4U
                 && (message.values[1] is float)
                 )
             {
+                ccvalue.knob = (int)message.values[0];
+                ccvalue.value = (float)message.values[1];
+
+                //イベントを呼び出す
+                if (MidiCCValueInputAction != null)
+                {
+                    MidiCCValueInputAction.Invoke(ccvalue);
+                }
+
                 Debug.Log("CC Val " + (int)message.values[0] + "/" + (float)message.values[1]);
             }
             // v2.2
@@ -613,6 +669,14 @@ namespace EVMC4U
                 && (message.values[1] is int)
                 )
             {
+                ccbutton.knob = (int)message.values[0];
+                ccbutton.active = (float)message.values[1];
+
+                //イベントを呼び出す
+                if (MidiCCButtonInputAction != null)
+                {
+                    MidiCCButtonInputAction.Invoke(ccbutton);
+                }
                 Debug.Log("CC Bit " + (int)message.values[0] + "/" + (int)message.values[1]);
             }
             // v2.2
