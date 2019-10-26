@@ -1,5 +1,7 @@
-<img width="320px" src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true"></img>
+<img src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/title3.png?raw=true"></img>  
 # [#EVMC4U](https://twitter.com/search?q=%23EVMC4U%20) - EasyVirtualMotionCaptureForUnity
+**かんたんにばもきゃとUnityつなぐやつ**
+
 VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。   
   
 あなたのUnityシーンをUnityPackage1つで全身トラッキング対応にできます。  
@@ -30,3 +32,4 @@ MIT Licence
 gpsnmeajp  
 https://sabowl.sakura.ne.jp/gpsnmeajp/  
 
+<img width="320px" src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/ExternalReceiver.gif?raw=true"></img>
