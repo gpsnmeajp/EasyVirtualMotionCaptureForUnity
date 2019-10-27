@@ -45,6 +45,7 @@ namespace EVMC4U
         public float SpeedMultiplier = 1.0f;
 
         ExternalReceiver exrcv;
+        InputReceiver inputrcv;
 
         Transform leftHand;
         Transform rightHand;
@@ -76,8 +77,10 @@ namespace EVMC4U
         {
             //ExternalReceiverにキー操作を登録
             exrcv = GetComponent<EVMC4U.ExternalReceiver>();
-            exrcv.ControllerInputAction.AddListener(ControllerInputEvent);
-            exrcv.KeyInputAction.AddListener(KeyInputEvent);
+            inputrcv = GetComponentInChildren<EVMC4U.InputReceiver>();
+
+            inputrcv.ControllerInputAction.AddListener(ControllerInputEvent);
+            inputrcv.KeyInputAction.AddListener(KeyInputEvent);
 
             //ブレ防止用にフィルタを設定
             exrcv.BonePositionFilterEnable = true;
