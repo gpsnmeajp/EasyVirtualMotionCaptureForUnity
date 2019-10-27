@@ -32,6 +32,17 @@ namespace EVMC4U
 {
     public class EVMC4UInputTesting : MonoBehaviour
     {
+        public InputReceiver receiver;
+        private void Start()
+        {
+            receiver.ControllerInputAction.AddListener(ControllerInputEvent);
+            receiver.KeyInputAction.AddListener(KeyInputEvent);
+
+            receiver.MidiNoteInputAction.AddListener(MidiNoteEvent);
+            receiver.MidiCCValueInputAction.AddListener(MidiCCValEvent);
+            receiver.MidiCCButtonInputAction.AddListener(MidiCCButtonEvent);
+        }
+
         public void KeyInputEvent(EVMC4U.KeyInput key)
         {
             switch (key.active)
@@ -65,6 +76,28 @@ namespace EVMC4U
                     Debug.Log("" + con.name + "(" + ((con.IsAxis == 1) ? "Axis" : "Non Axis") + "/" + ((con.IsLeft == 1) ? "Left" : "Right") + "/" + ((con.IsTouch == 1) ? "Touch" : "Non Touch") + " [" + con.Axis.x + "," + con.Axis.y + "," + con.Axis.z + "]" + ") unknown.");
                     break;
             }
+        }
+
+        public void MidiNoteEvent(EVMC4U.MidiNote note)
+        {
+            if (note.active == 1)
+            {
+                Debug.Log("MIDI Note ON =" + note.note + " channel=" + note.channel + " velocity=" + note.velocity);
+            }
+            else
+            {
+                Debug.Log("MIDI note OFF =" + note.note + " channel=" + note.channel + " velocity=" + note.velocity);
+            }
+        }
+
+        public void MidiCCValEvent(EVMC4U.MidiCCValue val)
+        {
+            Debug.Log("MIDI CC Value knob=" + val.knob + " value=" + val.value);
+        }
+
+        public void MidiCCButtonEvent(EVMC4U.MidiCCButton bit)
+        {
+            Debug.Log("MIDI CC Button knob=" + bit.knob + " active=" + bit.active);
         }
     }
 }
