@@ -49,6 +49,9 @@ namespace EVMC4U
         public MidiCCValueInputEvent MidiCCValueInputAction = new MidiCCValueInputEvent();
         public MidiCCButtonInputEvent MidiCCButtonInputAction = new MidiCCButtonInputEvent();
 
+        [Header("MIDI CC Monitor")]
+        public float[] CCValuesMonitor = new float[128];
+
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[1];
 
@@ -66,6 +69,9 @@ namespace EVMC4U
         {
             externalReceiverManager = new ExternalReceiverManager(NextReceivers);
             StatusMessage = "Waiting for Master...";
+
+            //強制
+            CCValuesMonitor = new float[128];
         }
 
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
@@ -191,6 +197,10 @@ namespace EVMC4U
                 }
 
                 LastInput = "CC Val " + ccvalue.knob + "/" + ccvalue.value;
+
+                if (ccvalue.knob >= 0 && ccvalue.knob < 128) {
+                    CCValuesMonitor[ccvalue.knob] = ccvalue.value;
+                }
             }
             // v2.2
             else if (message.address == "/VMC/Ext/Midi/CC/Bit"

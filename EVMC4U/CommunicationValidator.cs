@@ -38,17 +38,18 @@ namespace EVMC4U
     {
         [Header("CommunicationValidator v1.0")]
         [SerializeField]
-        private int CallCountMonitor = 0; //Inspector表示用
-
-        public int Available = 0;
-        public float time = 0;
-
-        [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
 
         [Header("UI Option")]
         public bool ShowInformation = false;
         public bool StrictMode = false;
+
+        [Header("Status Monitor")]
+        [SerializeField]
+        private int CallCountMonitor = 0; //Inspector表示用
+
+        public int Available = 0;
+        public float time = 0;
 
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[1];

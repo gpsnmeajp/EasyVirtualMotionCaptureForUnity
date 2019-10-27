@@ -36,19 +36,28 @@ namespace EVMC4U
 {
     public class DeviceReceiver : MonoBehaviour, IExternalReceiver
     {
+        const int arrayMax = 16;
+
         [Header("DeviceReceiver v1.0")]
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
 
-        public Transform TestPos1;
-        public Transform TestPos2;
-        public Transform TestPos3;
+        [Header("Device Config")]
+        public string[] Serials = new string[arrayMax];
+        public Transform[] Transforms = new Transform[arrayMax];
+
+        [Header("Device Monitor")]
+        public string[] Types = new string[arrayMax];
+        public Vector3[] Vector3s = new Vector3[arrayMax];
 
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[1];
 
         private ExternalReceiverManager externalReceiverManager = null;
         bool shutdown = false;
+
+        Dictionary<string, int> SerialIndexes = new Dictionary<string, int>();
+        int ListIndex = 0;
 
         //メッセージ処理一時変数struct(負荷対策)
         Vector3 pos;
@@ -59,6 +68,24 @@ namespace EVMC4U
         {
             externalReceiverManager = new ExternalReceiverManager(NextReceivers);
             StatusMessage = "Waiting for Master...";
+
+            //モニタ強制
+            Types = new string[Serials.Length];
+            Vector3s = new Vector3[Serials.Length];
+
+            //登録処理
+            ListIndex = 0;
+            for (int i = 0; i < Serials.Length; i++)
+            {
+                //nullでも空白でもない場合(対象がある場合)
+                if (Serials[i] != null && Serials[i] != "")
+                {
+                    //辞書に登録
+                    SerialIndexes.Add(Serials[i], ListIndex);
+                    //インデックスを更新
+                    ListIndex++;
+                }
+            }
         }
 
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
@@ -113,9 +140,7 @@ namespace EVMC4U
                 rot.z = (float)message.values[6];
                 rot.w = (float)message.values[7];
 
-                TestPos1.position = pos;
-                TestPos1.rotation = rot;
-
+                devideUpdate("HMD", (string)message.values[0], pos, rot);
                 //Debug.Log("HMD pos " + (string)message.values[0] + " : " + pos + "/" + rot);
             }
             // v2.2
@@ -138,9 +163,7 @@ namespace EVMC4U
                 rot.z = (float)message.values[6];
                 rot.w = (float)message.values[7];
 
-                TestPos2.position = pos;
-                TestPos2.rotation = rot;
-
+                devideUpdate("Controller", (string)message.values[0], pos, rot);
                 //Debug.Log("Con pos " + (string)message.values[0] + " : " + pos + "/" + rot);
             }
             // v2.2
@@ -163,10 +186,40 @@ namespace EVMC4U
                 rot.z = (float)message.values[6];
                 rot.w = (float)message.values[7];
 
-                TestPos3.position = pos;
-                TestPos3.rotation = rot;
-
+                devideUpdate("Tracker", (string)message.values[0], pos, rot);
                 //Debug.Log("Tra pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+            }
+        }
+
+        void devideUpdate(string type, string serial, Vector3 pos, Quaternion rot)
+        {
+            //辞書に登録済み
+            if (SerialIndexes.ContainsKey(serial))
+            {
+                int i = SerialIndexes[serial];
+                //配列を更新
+                Types[i] = type;
+                Vector3s[i] = pos;
+
+                if (i < Transforms.Length && Transforms[i] != null) 
+                {
+                    Transforms[i].localPosition = pos;
+                    Transforms[i].localRotation = rot;
+                }
+            }
+            else
+            {
+                //最大を超えたら登録しない
+                if (ListIndex < Serials.Length)
+                {
+                    //辞書に未登録
+
+                    //辞書に登録
+                    Serials[ListIndex] = serial;
+                    SerialIndexes.Add(serial, ListIndex);
+                    //インデックスを更新
+                    ListIndex++;
+                }
             }
         }
     }
