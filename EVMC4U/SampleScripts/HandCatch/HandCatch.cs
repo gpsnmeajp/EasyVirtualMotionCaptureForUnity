@@ -31,7 +31,7 @@ using UnityEngine;
 namespace EVMC4U
 {
     [RequireComponent(typeof(EVMC4U.ExternalReceiver))]
-    public class EVMC4U_HandCatch : MonoBehaviour
+    public class HandCatch : MonoBehaviour
     {
         //表示オンオフ
         public bool ShowCollider = true;
@@ -73,8 +73,8 @@ namespace EVMC4U
         Vector3 leftLastSpeed;
         Vector3 rightLastSpeed;
 
-        EVMC4U_HandCatch_Helper leftHelper;
-        EVMC4U_HandCatch_Helper rightHelper;
+        HandCatch_Helper leftHelper;
+        HandCatch_Helper rightHelper;
 
         GameObject leftCatchedObject;
         GameObject rightCatchedObject;
@@ -121,7 +121,7 @@ namespace EVMC4U
             leftRigidBody.isKinematic = true;
 
             //左手当たり判定ヘルパー追加
-            leftHelper = leftSphere.AddComponent<EVMC4U_HandCatch_Helper>();
+            leftHelper = leftSphere.AddComponent<HandCatch_Helper>();
 
             //右手当たり判定スフィア生成
             rightSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -140,7 +140,7 @@ namespace EVMC4U
             rightRigidBody.isKinematic = true;
 
             //右手当たり判定ヘルパー追加
-            rightHelper = rightSphere.AddComponent<EVMC4U_HandCatch_Helper>();
+            rightHelper = rightSphere.AddComponent<HandCatch_Helper>();
         }
 
         //物理演算のためFixedUpdate

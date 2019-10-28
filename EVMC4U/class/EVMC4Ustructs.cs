@@ -24,25 +24,52 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using uOSC;
+using UnityEngine.Events;
 
-namespace EVMC4U
-{
-    public class EVMC4UDaisyChainTesting : MonoBehaviour, EVMC4U.IExternalReceiver
+namespace EVMC4U {
+    //キーボード入力情報
+    public struct KeyInput
     {
-        //デイジーチェーンテスト
-        public void MessageDaisyChain(ref Message message, int callCount)
-        {
-            if (message.address == "/VMC/Ext/T")
-            {
-                Debug.Log(message.address + "[" + (float)message.values[0] + "]");
-            }
-
-            //メッセージ全部Logに出そうとか考えないこと。Unityが死ぬほど送られてきます。
-        }
+        public int active;
+        public string name;
+        public int keycode;
     }
 
+    //コントローラ入力情報
+    public struct ControllerInput
+    {
+        public int active;
+        public string name;
+        public int IsLeft;
+        public int IsTouch;
+        public int IsAxis;
+        public Vector3 Axis;
+    }
+
+    //MIDI Note入力情報
+    public struct MidiNote
+    {
+        public int active;
+        public int channel;
+        public int note;
+        public float velocity;
+    }
+
+    //MIDI CC Value入力情報
+    public struct MidiCCValue
+    {
+        public int knob;
+        public float value;
+    }
+
+    //MIDI CC Button入力情報
+    public struct MidiCCButton
+    {
+        public int knob;
+        public float active;
+    }
 }

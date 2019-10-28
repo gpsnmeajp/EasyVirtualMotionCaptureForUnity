@@ -28,24 +28,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace EVMC4U
 {
-    public class EVMC4UAddComponentTest : MonoBehaviour
+
+    public class HandCatch_Helper : MonoBehaviour
     {
-        public GameObject Model;
+        public bool Trigger = false;
+        public Collider other;
 
-        // Use this for initialization
-        void Start()
+        private void OnTriggerEnter(Collider other)
         {
-            var x = gameObject.AddComponent<EVMC4U.ExternalReceiver>();
-            x.Model = Model;
+            this.other = other;
+            Trigger = true;
+
+            GetComponent<MeshRenderer>().material.color = Color.cyan;
+        }
+        private void OnTriggerExit(Collider other)
+        {
+            this.other = other;
+            Trigger = false;
+
+            GetComponent<MeshRenderer>().material.color = Color.white;
         }
 
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
     }
 }

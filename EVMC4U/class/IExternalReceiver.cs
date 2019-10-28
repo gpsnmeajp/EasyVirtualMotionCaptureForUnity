@@ -24,21 +24,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-namespace EVMC4U
-{
-    public class EVMC4U_CCCameraControl : MonoBehaviour
+namespace EVMC4U {
+    //デイジーチェーン受信の最低限のインターフェース
+    public interface IExternalReceiver
     {
-        public InputReceiver r;
-        public Camera c;
-        private void Update()
-        {
-            c.fieldOfView = r.CCValuesMonitor[16] * 90 + 1;
-            c.transform.position = new Vector3((r.CCValuesMonitor[0] - 0.5f) * 3f, (r.CCValuesMonitor[1] - 0.5f) * 3f, (r.CCValuesMonitor[2]-0.5f)*3f);
-            c.transform.rotation = Quaternion.Euler(r.CCValuesMonitor[3]*360f, r.CCValuesMonitor[4] * 360f, r.CCValuesMonitor[5] * 360f);
-        }
+        void MessageDaisyChain(ref uOSC.Message message, int callCount);
     }
 }

@@ -29,7 +29,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace EVMC4U
 {
-    public class EVMC4U_CapsuleRigidbodyMover : MonoBehaviour
+    public class CapsuleRigidbodyMover : MonoBehaviour
     {
         Rigidbody r;
         public Transform model;
