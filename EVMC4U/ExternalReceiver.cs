@@ -41,7 +41,8 @@ namespace EVMC4U
         public GameObject Model = null;
 
         [Header("Root Synchronize Option")]
-        public Transform RootTransform = null;
+        public Transform RootPositionTransform = null;
+        public Transform RootRotationTransform = null;
         public bool RootPositionSynchronize = true; //ルート座標同期(ルームスケール移動)
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
@@ -153,11 +154,18 @@ namespace EVMC4U
                 blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
             }
 
-            //ルート姿勢がない場合
-            if (RootTransform == null && Model != null)
+            //ルート位置がない場合
+            if (RootPositionTransform == null && Model != null)
             {
                 //モデル姿勢をルート姿勢にする
-                RootTransform = Model.transform;
+                RootPositionTransform = Model.transform;
+            }
+
+            //ルート回転がない場合
+            if (RootRotationTransform == null && Model != null)
+            {
+                //モデル姿勢をルート姿勢にする
+                RootRotationTransform = Model.transform;
             }
 
             //モデルがない場合はエラー表示をしておく(親切心)
@@ -213,15 +221,22 @@ namespace EVMC4U
                 return;
             }
 
-            //ルート姿勢がない場合
-            if (RootTransform == null && Model != null)
+            //ルート位置がない場合
+            if (RootPositionTransform == null && Model != null)
             {
                 //モデル姿勢をルート姿勢にする
-                RootTransform = Model.transform;
+                RootPositionTransform = Model.transform;
+            }
+
+            //ルート回転がない場合
+            if (RootRotationTransform == null && Model != null)
+            {
+                //モデル姿勢をルート姿勢にする
+                RootRotationTransform = Model.transform;
             }
 
             //モデルがないか、モデル姿勢、ルート姿勢が取得できないなら何もしない
-            if (Model == null || Model.transform == null || RootTransform == null)
+            if (Model == null || Model.transform == null || RootPositionTransform == null || RootRotationTransform == null)
             {
                 return;
             }
@@ -268,12 +283,12 @@ namespace EVMC4U
                 //位置同期
                 if (RootPositionSynchronize)
                 {
-                    RootTransform.localPosition = pos;
+                    RootPositionTransform.localPosition = pos;
                 }
                 //回転同期
                 if (RootRotationSynchronize)
                 {
-                    RootTransform.localRotation = rot;
+                    RootRotationTransform.localRotation = rot;
                 }
                 //スケール同期とオフセット補正(v2.1拡張プロトコルの場合のみ)
                 if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset
@@ -292,8 +307,12 @@ namespace EVMC4U
                     offset.y = (float)message.values[12];
                     offset.z = (float)message.values[13];
 
-                    RootTransform.localScale = scale;
-                    RootTransform.position -= offset;
+                    Model.transform.localScale = scale;
+
+                    //位置同期が有効な場合のみオフセットを反映する
+                    if (RootPositionSynchronize) {
+                        RootPositionTransform.position -= offset;
+                    }
                 }
             }
             //ボーン姿勢
