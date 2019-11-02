@@ -39,10 +39,11 @@ namespace EVMC4U
     {
         [Header("ExternalReceiver v3.0")]
         public GameObject Model = null;
+        public bool Freeze = false; //すべての同期を止める(撮影向け)
 
         [Header("Root Synchronize Option")]
-        public Transform RootPositionTransform = null;
-        public Transform RootRotationTransform = null;
+        public Transform RootPositionTransform = null; //VR向けroot位置同期オブジェクト指定
+        public Transform RootRotationTransform = null; //VR向けroot回転同期オブジェクト指定
         public bool RootPositionSynchronize = true; //ルート座標同期(ルームスケール移動)
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
@@ -198,7 +199,9 @@ namespace EVMC4U
             }
 
             //メッセージを処理
-            ProcessMessage(ref message);
+            if (!Freeze) {
+                ProcessMessage(ref message);
+            }
 
             //次のデイジーチェーンへ伝える
             if (!externalReceiverManager.SendNextReceivers(message, callCount))
