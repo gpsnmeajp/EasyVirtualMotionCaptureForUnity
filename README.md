@@ -18,6 +18,7 @@ https://sh-akira.github.io/VirtualMotionCapture/download.html
 可能な限り最新の先行リリース版をお使いください。
 
 # [説明書とダウンロード方法](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
+# [How to use(English)](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/How-to-use#how-to-use)
 # [お問合せ先](https://discord.gg/QSrDhE8)
 **バーチャルモーションキャプチャーとはサポート窓口が違いますのでご注意ください。  
 (作者が違います)**
