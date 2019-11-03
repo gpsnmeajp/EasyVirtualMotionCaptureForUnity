@@ -34,6 +34,7 @@ public class SendTest : MonoBehaviour {
     public Transform con1;
     public Transform con2;
     public Transform tra;
+    public Transform cam;
 
     uOSC.uOscClient client;
     // Use this for initialization
@@ -43,6 +44,19 @@ public class SendTest : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        client.Send("/VMC/Ext/Set/Period",
+            1, 2, 3, 4, 5, 6);
+
+        client.Send("/VMC/Ext/Midi/CC/Val", 0, Mathf.Sin(Time.time));
+
+        client.Send("/VMC/Ext/Cam", 0, Mathf.Sin(Time.time));
+
+
+        client.Send("/VMC/Ext/Cam", "FreeCam",
+            cam.position.x, cam.position.y, cam.position.z,
+            cam.rotation.x, cam.rotation.y, cam.rotation.z, cam.rotation.w,
+            (float)90f);
+
         client.Send("/VMC/Ext/Hmd/Pos", "HMD",
             HMD.position.x, HMD.position.y, HMD.position.z,
             HMD.rotation.x, HMD.rotation.y, HMD.rotation.z, HMD.rotation.w);
