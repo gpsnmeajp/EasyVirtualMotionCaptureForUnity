@@ -30,7 +30,6 @@ using UnityEngine;
 
 namespace EVMC4U
 {
-
     public class HandCatch_Helper : MonoBehaviour
     {
         public bool Trigger = false;

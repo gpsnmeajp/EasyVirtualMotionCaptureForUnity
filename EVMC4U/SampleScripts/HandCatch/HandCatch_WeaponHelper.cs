@@ -31,47 +31,48 @@ using UnityEngine;
 //掴まれたとき: 手の位置に持つ
 //離されたとき: 鞘の位置なら、収まるべき場所に戻る
 //              そうでないなら、親なしにしてとどまる
-
-public class HandCatch_WeaponHelper : MonoBehaviour
+namespace EVMC4U
 {
-    public Transform LeftHoldPosition; //左手保持位置
-    public Transform RightHoldPosition; //右手保持位置
-
-    //初期位置(鞘に収まっている状態)
-    Vector3 CasePosition;
-    Quaternion CaseRotation;
-
-    void Start()
+    public class HandCatch_WeaponHelper : MonoBehaviour
     {
-        CasePosition = transform.localPosition;
-        CaseRotation = transform.localRotation;
-    }
+        public Transform LeftHoldPosition; //左手保持位置
+        public Transform RightHoldPosition; //右手保持位置
 
-    void OnCatchedLeftHand()
-    {
-        Debug.Log("C:L");
-        transform.localPosition = LeftHoldPosition.localPosition;
-        transform.localRotation = LeftHoldPosition.localRotation;
-    }
-    void OnCatchedRightHand()
-    {
-        Debug.Log("C:R");
-        transform.localPosition = RightHoldPosition.localPosition;
-        transform.localRotation = RightHoldPosition.localRotation;
-    }
+        //初期位置(鞘に収まっている状態)
+        Vector3 CasePosition;
+        Quaternion CaseRotation;
 
-    void OnReleasedLeftHand()
-    {
-        Debug.Log("R:L");
-        transform.localPosition = CasePosition;
-        transform.localRotation = CaseRotation;
-    }
+        void Start()
+        {
+            CasePosition = transform.localPosition;
+            CaseRotation = transform.localRotation;
+        }
 
-    void OnReleasedRightHand()
-    {
-        Debug.Log("R:R");
-        transform.localPosition = CasePosition;
-        transform.localRotation = CaseRotation;
-    }
+        void OnCatchedLeftHand()
+        {
+            Debug.Log("C:L");
+            transform.localPosition = LeftHoldPosition.localPosition;
+            transform.localRotation = LeftHoldPosition.localRotation;
+        }
+        void OnCatchedRightHand()
+        {
+            Debug.Log("C:R");
+            transform.localPosition = RightHoldPosition.localPosition;
+            transform.localRotation = RightHoldPosition.localRotation;
+        }
 
+        void OnReleasedLeftHand()
+        {
+            Debug.Log("R:L");
+            transform.localPosition = CasePosition;
+            transform.localRotation = CaseRotation;
+        }
+
+        void OnReleasedRightHand()
+        {
+            Debug.Log("R:R");
+            transform.localPosition = CasePosition;
+            transform.localRotation = CaseRotation;
+        }
+    }
 }
