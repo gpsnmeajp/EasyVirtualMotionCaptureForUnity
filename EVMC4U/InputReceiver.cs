@@ -81,6 +81,12 @@ namespace EVMC4U
             CCValuesMonitor = new float[128];
         }
 
+        //デイジーチェーンを更新
+        public void UpdateDaisyChain()
+        {
+            externalReceiverManager.GetIExternalReceiver(NextReceivers);
+        }
+
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
         {
             //Startされていない場合無視

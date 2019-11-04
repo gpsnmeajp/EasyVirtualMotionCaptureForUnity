@@ -70,6 +70,12 @@ namespace EVMC4U
             StatusMessage = "Waiting for Master...";
         }
 
+        //デイジーチェーンを更新
+        public void UpdateDaisyChain()
+        {
+            externalReceiverManager.GetIExternalReceiver(NextReceivers);
+        }
+
         void Update()
         {
             //カメラがセットされているならば

@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -31,7 +32,7 @@ using uOSC;
 
 namespace EVMC4U
 {
-    public class DaisyChainTesting : MonoBehaviour, EVMC4U.IExternalReceiver
+    public class DaisyChainTesting : MonoBehaviour, IExternalReceiver
     {
         //デイジーチェーンテスト
         public void MessageDaisyChain(ref Message message, int callCount)
@@ -43,6 +44,12 @@ namespace EVMC4U
 
             //メッセージ全部Logに出そうとか考えないこと。Unityが死ぬほど送られてきます。
         }
+
+        public void UpdateDaisyChain()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
 }

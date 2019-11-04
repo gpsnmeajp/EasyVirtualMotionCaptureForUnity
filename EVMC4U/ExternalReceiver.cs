@@ -133,6 +133,12 @@ namespace EVMC4U
             }
         }
 
+        //デイジーチェーンを更新
+        public void UpdateDaisyChain()
+        {
+            externalReceiverManager.GetIExternalReceiver(NextReceivers);
+        }
+
         //外部から通信状態を取得するための公開関数
         int GetAvailable()
         {

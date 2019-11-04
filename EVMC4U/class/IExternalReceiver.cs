@@ -35,5 +35,6 @@ namespace EVMC4U {
     public interface IExternalReceiver
     {
         void MessageDaisyChain(ref uOSC.Message message, int callCount);
+        void UpdateDaisyChain();
     }
 }
