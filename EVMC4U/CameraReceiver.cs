@@ -56,13 +56,48 @@ namespace EVMC4U
         private Quaternion cameraRotFilter = Quaternion.identity;
 
         //メッセージ処理一時変数struct(負荷対策)
-        Vector3 pos;
-        Quaternion rot;
+        //Vector3 pos;
+        //Quaternion rot;
+
+        //カメラ情報のキャッシュ
+        Vector3 cameraPos = Vector3.zero;
+        Quaternion cameraRot = Quaternion.identity;
+        float fov = 0;
 
         void Start()
         {
             externalReceiverManager = new ExternalReceiverManager(NextReceivers);
             StatusMessage = "Waiting for Master...";
+        }
+
+        void Update()
+        {
+            //カメラがセットされているならば
+            if (VMCControlledCamera != null && VMCControlledCamera.transform != null)
+            {
+                //カメラ移動フィルタ
+                if (CameraPositionFilterEnable)
+                {
+                    cameraPosFilter = (cameraPosFilter * CameraFilter) + cameraPos * (1.0f - CameraFilter);
+                    VMCControlledCamera.transform.localPosition = cameraPosFilter;
+                }
+                else
+                {
+                    VMCControlledCamera.transform.localPosition = cameraPos;
+                }
+                //カメラ回転フィルタ
+                if (CameraRotationFilterEnable)
+                {
+                    cameraRotFilter = Quaternion.Slerp(cameraRotFilter, cameraRot, 1.0f - CameraFilter);
+                    VMCControlledCamera.transform.localRotation = cameraRotFilter;
+                }
+                else
+                {
+                    VMCControlledCamera.transform.localRotation = cameraRot;
+                }
+                //FOV同期
+                VMCControlledCamera.fieldOfView = fov;
+            }
         }
 
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
@@ -111,41 +146,15 @@ namespace EVMC4U
                 && (message.values[8] is float)
                 )
             {
-                //カメラがセットされているならば
-                if (VMCControlledCamera != null && VMCControlledCamera.transform != null)
-                {
-                    pos.x = (float)message.values[1];
-                    pos.y = (float)message.values[2];
-                    pos.z = (float)message.values[3];
-                    rot.x = (float)message.values[4];
-                    rot.y = (float)message.values[5];
-                    rot.z = (float)message.values[6];
-                    rot.w = (float)message.values[7];
-                    float fov = (float)message.values[8];
-
-                    //カメラ移動フィルタ
-                    if (CameraPositionFilterEnable)
-                    {
-                        cameraPosFilter = (cameraPosFilter * CameraFilter) + pos * (1.0f - CameraFilter);
-                        VMCControlledCamera.transform.localPosition = cameraPosFilter;
-                    }
-                    else
-                    {
-                        VMCControlledCamera.transform.localPosition = pos;
-                    }
-                    //カメラ回転フィルタ
-                    if (CameraRotationFilterEnable)
-                    {
-                        cameraRotFilter = Quaternion.Slerp(cameraRotFilter, rot, 1.0f - CameraFilter);
-                        VMCControlledCamera.transform.localRotation = cameraRotFilter;
-                    }
-                    else
-                    {
-                        VMCControlledCamera.transform.localRotation = rot;
-                    }
-                    //FOV同期
-                    VMCControlledCamera.fieldOfView = fov;
-                }
+                cameraPos.x = (float)message.values[1];
+                cameraPos.y = (float)message.values[2];
+                cameraPos.z = (float)message.values[3];
+                cameraRot.x = (float)message.values[4];
+                cameraRot.y = (float)message.values[5];
+                cameraRot.z = (float)message.values[6];
+                cameraRot.w = (float)message.values[7];
+                fov = (float)message.values[8];
+                //受信と更新のタイミングは切り離した
             }
         }
     }

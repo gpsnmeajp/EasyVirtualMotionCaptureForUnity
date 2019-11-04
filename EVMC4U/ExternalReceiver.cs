@@ -97,6 +97,10 @@ namespace EVMC4U
         //ボーンENUM情報テーブル
         Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
 
+        //ボーン情報テーブル
+        Dictionary<HumanBodyBones, Vector3> HumanBodyBonesPositionTable = new Dictionary<HumanBodyBones, Vector3>();
+        Dictionary<HumanBodyBones, Quaternion> HumanBodyBonesRotationTable = new Dictionary<HumanBodyBones, Quaternion>();
+
         //uOSCサーバー
         uOSC.uOscServer server = null;
 
@@ -175,6 +179,18 @@ namespace EVMC4U
                 StatusMessage = "Model not found.";
                 return;
             }
+
+            //モデルが更新されたときに関連情報を更新する
+            if (OldModel != Model && Model != null)
+            {
+                animator = Model.GetComponent<Animator>();
+                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                OldModel = Model;
+                Debug.Log("[ExternalReceiver] New model detected");
+            }
+
+            BoneSynchronizeByTable();
+
         }
 
         //データ受信イベント
@@ -313,7 +329,8 @@ namespace EVMC4U
                     Model.transform.localScale = scale;
 
                     //位置同期が有効な場合のみオフセットを反映する
-                    if (RootPositionSynchronize) {
+                    if (RootPositionSynchronize)
+                    {
                         RootPositionTransform.position -= offset;
                     }
                 }
@@ -330,6 +347,7 @@ namespace EVMC4U
                 && (message.values[7] is float)
                 )
             {
+                string boneName = (string)message.values[0];
                 pos.x = (float)message.values[1];
                 pos.y = (float)message.values[2];
                 pos.z = (float)message.values[3];
@@ -338,9 +356,31 @@ namespace EVMC4U
                 rot.z = (float)message.values[6];
                 rot.w = (float)message.values[7];
 
-                BoneSynchronize((string)message.values[0], ref pos, ref rot);
-            }
+                //Humanoidボーンに該当するボーンがあるか調べる
+                HumanBodyBones bone;
+                if (HumanBodyBonesTryParse(ref boneName, out bone))
+                {
+                    //あれば位置と回転をキャッシュする
+                    if (HumanBodyBonesPositionTable.ContainsKey(bone))
+                    {
+                        HumanBodyBonesPositionTable[bone] = pos;
+                    }
+                    else
+                    {
+                        HumanBodyBonesPositionTable.Add(bone, pos);
+                    }
 
+                    if (HumanBodyBonesRotationTable.ContainsKey(bone))
+                    {
+                        HumanBodyBonesRotationTable[bone] = rot;
+                    }
+                    else
+                    {
+                        HumanBodyBonesRotationTable.Add(bone, rot);
+                    }
+                }
+                //受信と更新のタイミングは切り離した
+            }
             //ブレンドシェープ同期
             else if (message.address == "/VMC/Ext/Blend/Val"
                 && (message.values[0] is string)
@@ -362,85 +402,85 @@ namespace EVMC4U
             }
         }
 
-        //ボーン位置同期
-        private void BoneSynchronize(string boneName, ref Vector3 pos, ref Quaternion rot)
+        //ボーン位置をキャッシュテーブルに基づいて更新
+        private void BoneSynchronizeByTable()
         {
-            //モデルが更新されたときに関連情報を更新する
-            if (OldModel != Model && Model != null)
+            //キャッシュテーブルを参照
+            foreach (var bone in HumanBodyBonesTable)
             {
-                animator = Model.GetComponent<Animator>();
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
-                OldModel = Model;
-                Debug.Log("[ExternalReceiver] New model detected");
-            }
-
-            //Humanoidボーンに該当するボーンがあるか調べる
-            HumanBodyBones bone;
-            if (HumanBodyBonesTryParse(ref boneName, out bone))
-            {
-                //操作可能な状態かチェック
-                if (animator != null && bone != HumanBodyBones.LastBone)
+                //キャッシュされた位置・回転を適用
+                if (HumanBodyBonesPositionTable.ContainsKey(bone.Value) && HumanBodyBonesRotationTable.ContainsKey(bone.Value))
                 {
-                    //ボーンによって操作を分ける
-                    var t = animator.GetBoneTransform(bone);
-                    if (t != null)
-                    {
-                        //指ボーン
-                        if (bone == HumanBodyBones.LeftIndexDistal ||
-                            bone == HumanBodyBones.LeftIndexIntermediate ||
-                            bone == HumanBodyBones.LeftIndexProximal ||
-                            bone == HumanBodyBones.LeftLittleDistal ||
-                            bone == HumanBodyBones.LeftLittleIntermediate ||
-                            bone == HumanBodyBones.LeftLittleProximal ||
-                            bone == HumanBodyBones.LeftMiddleDistal ||
-                            bone == HumanBodyBones.LeftMiddleIntermediate ||
-                            bone == HumanBodyBones.LeftMiddleProximal ||
-                            bone == HumanBodyBones.LeftRingDistal ||
-                            bone == HumanBodyBones.LeftRingIntermediate ||
-                            bone == HumanBodyBones.LeftRingProximal ||
-                            bone == HumanBodyBones.LeftThumbDistal ||
-                            bone == HumanBodyBones.LeftThumbIntermediate ||
-                            bone == HumanBodyBones.LeftThumbProximal ||
+                    BoneSynchronize(bone.Value, HumanBodyBonesPositionTable[bone.Value], HumanBodyBonesRotationTable[bone.Value]);
+                }
+            }
+        }
 
-                            bone == HumanBodyBones.RightIndexDistal ||
-                            bone == HumanBodyBones.RightIndexIntermediate ||
-                            bone == HumanBodyBones.RightIndexProximal ||
-                            bone == HumanBodyBones.RightLittleDistal ||
-                            bone == HumanBodyBones.RightLittleIntermediate ||
-                            bone == HumanBodyBones.RightLittleProximal ||
-                            bone == HumanBodyBones.RightMiddleDistal ||
-                            bone == HumanBodyBones.RightMiddleIntermediate ||
-                            bone == HumanBodyBones.RightMiddleProximal ||
-                            bone == HumanBodyBones.RightRingDistal ||
-                            bone == HumanBodyBones.RightRingIntermediate ||
-                            bone == HumanBodyBones.RightRingProximal ||
-                            bone == HumanBodyBones.RightThumbDistal ||
-                            bone == HumanBodyBones.RightThumbIntermediate ||
-                            bone == HumanBodyBones.RightThumbProximal)
+        //ボーン位置同期
+        private void BoneSynchronize(HumanBodyBones bone, Vector3 pos, Quaternion rot)
+        {
+            //操作可能な状態かチェック
+            if (animator != null && bone != HumanBodyBones.LastBone)
+            {
+                //ボーンによって操作を分ける
+                var t = animator.GetBoneTransform(bone);
+                if (t != null)
+                {
+                    //指ボーン
+                    if (bone == HumanBodyBones.LeftIndexDistal ||
+                        bone == HumanBodyBones.LeftIndexIntermediate ||
+                        bone == HumanBodyBones.LeftIndexProximal ||
+                        bone == HumanBodyBones.LeftLittleDistal ||
+                        bone == HumanBodyBones.LeftLittleIntermediate ||
+                        bone == HumanBodyBones.LeftLittleProximal ||
+                        bone == HumanBodyBones.LeftMiddleDistal ||
+                        bone == HumanBodyBones.LeftMiddleIntermediate ||
+                        bone == HumanBodyBones.LeftMiddleProximal ||
+                        bone == HumanBodyBones.LeftRingDistal ||
+                        bone == HumanBodyBones.LeftRingIntermediate ||
+                        bone == HumanBodyBones.LeftRingProximal ||
+                        bone == HumanBodyBones.LeftThumbDistal ||
+                        bone == HumanBodyBones.LeftThumbIntermediate ||
+                        bone == HumanBodyBones.LeftThumbProximal ||
+
+                        bone == HumanBodyBones.RightIndexDistal ||
+                        bone == HumanBodyBones.RightIndexIntermediate ||
+                        bone == HumanBodyBones.RightIndexProximal ||
+                        bone == HumanBodyBones.RightLittleDistal ||
+                        bone == HumanBodyBones.RightLittleIntermediate ||
+                        bone == HumanBodyBones.RightLittleProximal ||
+                        bone == HumanBodyBones.RightMiddleDistal ||
+                        bone == HumanBodyBones.RightMiddleIntermediate ||
+                        bone == HumanBodyBones.RightMiddleProximal ||
+                        bone == HumanBodyBones.RightRingDistal ||
+                        bone == HumanBodyBones.RightRingIntermediate ||
+                        bone == HumanBodyBones.RightRingProximal ||
+                        bone == HumanBodyBones.RightThumbDistal ||
+                        bone == HumanBodyBones.RightThumbIntermediate ||
+                        bone == HumanBodyBones.RightThumbProximal)
+                    {
+                        //指ボーンカットオフが有効でなければ
+                        if (!HandPoseSynchronizeCutoff)
                         {
-                            //指ボーンカットオフが有効でなければ
-                            if (!HandPoseSynchronizeCutoff)
-                            {
-                                //ボーン同期する。ただしフィルタはかけない
-                                BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
-                            }
+                            //ボーン同期する。ただしフィルタはかけない
+                            BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
                         }
-                        //目ボーン
-                        else if (bone == HumanBodyBones.LeftEye ||
-                            bone == HumanBodyBones.RightEye)
+                    }
+                    //目ボーン
+                    else if (bone == HumanBodyBones.LeftEye ||
+                        bone == HumanBodyBones.RightEye)
+                    {
+                        //目ボーンカットオフが有効でなければ
+                        if (!EyeBoneSynchronizeCutoff)
                         {
-                            //目ボーンカットオフが有効でなければ
-                            if (!EyeBoneSynchronizeCutoff)
-                            {
-                                //ボーン同期する。ただしフィルタはかけない
-                                BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
-                            }
+                            //ボーン同期する。ただしフィルタはかけない
+                            BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, false, false);
                         }
-                        else
-                        {
-                            //ボーン同期する。フィルタは設定依存
-                            BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, BonePositionFilterEnable, BoneRotationFilterEnable);
-                        }
+                    }
+                    else
+                    {
+                        //ボーン同期する。フィルタは設定依存
+                        BoneSynchronizeSingle(t, ref bone, ref pos, ref rot, BonePositionFilterEnable, BoneRotationFilterEnable);
                     }
                 }
             }
