@@ -30,7 +30,7 @@ using UnityEngine;
 
 namespace EVMC4U
 {
-    [RequireComponent(typeof(EVMC4U.ExternalReceiver))]
+    [RequireComponent(typeof(ExternalReceiver))]
     public class HandCatch : MonoBehaviour
     {
         //表示オンオフ
@@ -50,6 +50,8 @@ namespace EVMC4U
         public string LeftKey = "Z";
         public string RightKey = "X";
         public string ControllerButton = "ClickTrigger";
+
+        public bool signaling = true;
 
         public bool StickyMode = false;
 
@@ -212,6 +214,12 @@ namespace EVMC4U
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        leftCatchedObject.SendMessage("OnCatchedLeftHand");
+                    }
                 }
             }
             else
@@ -234,6 +242,12 @@ namespace EVMC4U
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        leftCatchedObject.SendMessage("OnReleasedLeftHand");
+                    }
                 }
             }
         }
@@ -281,6 +295,12 @@ namespace EVMC4U
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        rightCatchedObject.SendMessage("OnCatchedRightHand");
+                    }
                 }
             }
             else
@@ -304,6 +324,12 @@ namespace EVMC4U
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        rightCatchedObject.SendMessage("OnReleasedRightHand");
+                    }
                 }
             }
         }
