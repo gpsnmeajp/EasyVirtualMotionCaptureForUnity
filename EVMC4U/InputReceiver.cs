@@ -239,11 +239,5 @@ namespace EVMC4U
                 InputDictionary["CC-" + ccbutton.knob] = (ccbutton.active != 0);
             }
         }
-        void Update() {
-            foreach (var x in InputDictionary) {
-                Debug.Log(x.Key + " : " + x.Value);
-            }
-        }
-
     }
 }
