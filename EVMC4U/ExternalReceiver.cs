@@ -156,6 +156,9 @@ namespace EVMC4U
             //エラー・無限ループ時は処理をしない
             if (shutdown) { return; }
 
+            //Freeze有効時は動きを一切止める
+            if (Freeze) { return; }
+
             //5.6.3p1などRunInBackgroundが既定で無効な場合Unityが極めて重くなるため対処
             Application.runInBackground = true;
 
