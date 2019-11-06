@@ -31,12 +31,6 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace EVMC4U {
-    //デイジーチェーン受信の最低限のインターフェース
-    public interface IExternalReceiver
-    {
-        void MessageDaisyChain(ref uOSC.Message message, int callCount);
-    }
-
     public class ExternalReceiverManager
     {
         List<IExternalReceiver> receivers = new List<IExternalReceiver>();
@@ -88,59 +82,4 @@ namespace EVMC4U {
             return true;
         }
     }
-
-    //キーボード入力情報
-    public struct KeyInput
-    {
-        public int active;
-        public string name;
-        public int keycode;
-    }
-
-    //コントローラ入力情報
-    public struct ControllerInput
-    {
-        public int active;
-        public string name;
-        public int IsLeft;
-        public int IsTouch;
-        public int IsAxis;
-        public Vector3 Axis;
-    }
-
-    //MIDI Note入力情報
-    public struct MidiNote
-    {
-        public int active;
-        public int channel;
-        public int note;
-        public float velocity;
-    }
-
-    //MIDI CC Value入力情報
-    public struct MidiCCValue
-    {
-        public int knob;
-        public float value;
-    }
-
-    //MIDI CC Button入力情報
-    public struct MidiCCButton
-    {
-        public int knob;
-        public float active;
-    }
-
-
-    //イベント定義
-    [Serializable]
-    public class KeyInputEvent : UnityEvent<KeyInput> { };
-    [Serializable]
-    public class ControllerInputEvent : UnityEvent<ControllerInput> { };
-    [Serializable]
-    public class MidiNoteInputEvent : UnityEvent<MidiNote> { };
-    [Serializable]
-    public class MidiCCValueInputEvent : UnityEvent<MidiCCValue> { };
-    [Serializable]
-    public class MidiCCButtonInputEvent : UnityEvent<MidiCCButton> { };
 }

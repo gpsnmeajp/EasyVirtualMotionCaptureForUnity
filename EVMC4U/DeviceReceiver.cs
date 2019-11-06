@@ -88,6 +88,12 @@ namespace EVMC4U
             }
         }
 
+        //デイジーチェーンを更新
+        public void UpdateDaisyChain()
+        {
+            externalReceiverManager.GetIExternalReceiver(NextReceivers);
+        }
+
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
         {
             //Startされていない場合無視

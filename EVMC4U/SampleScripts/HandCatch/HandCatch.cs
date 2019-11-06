@@ -30,8 +30,8 @@ using UnityEngine;
 
 namespace EVMC4U
 {
-    [RequireComponent(typeof(EVMC4U.ExternalReceiver))]
-    public class EVMC4U_HandCatch : MonoBehaviour
+    [RequireComponent(typeof(ExternalReceiver))]
+    public class HandCatch : MonoBehaviour
     {
         //表示オンオフ
         public bool ShowCollider = true;
@@ -40,11 +40,26 @@ namespace EVMC4U
         public float NonHoldFilter = 0f;
         public float InHoldFilter = 0.90f;
 
+        float offset = 0.06f;
+        float size = 0.15f;
+
         public string CollisionTag = "";
 
         public float SpeedMultiplier = 1.0f;
 
+        public string LeftKey = "Z";
+        public string RightKey = "X";
+        public string ControllerButton = "ClickTrigger";
+
+        public bool signaling = true;
+
+        public bool StickyMode = false;
+
+        bool stickyLeft = false;
+        bool stickyRight = false;
+
         ExternalReceiver exrcv;
+        InputReceiver inputrcv;
 
         Transform leftHand;
         Transform rightHand;
@@ -60,8 +75,8 @@ namespace EVMC4U
         Vector3 leftLastSpeed;
         Vector3 rightLastSpeed;
 
-        EVMC4U_HandCatch_Helper leftHelper;
-        EVMC4U_HandCatch_Helper rightHelper;
+        HandCatch_Helper leftHelper;
+        HandCatch_Helper rightHelper;
 
         GameObject leftCatchedObject;
         GameObject rightCatchedObject;
@@ -76,8 +91,10 @@ namespace EVMC4U
         {
             //ExternalReceiverにキー操作を登録
             exrcv = GetComponent<EVMC4U.ExternalReceiver>();
-            exrcv.ControllerInputAction.AddListener(ControllerInputEvent);
-            exrcv.KeyInputAction.AddListener(KeyInputEvent);
+            inputrcv = GetComponentInChildren<EVMC4U.InputReceiver>();
+
+            inputrcv.ControllerInputAction.AddListener(ControllerInputEvent);
+            inputrcv.KeyInputAction.AddListener(KeyInputEvent);
 
             //ブレ防止用にフィルタを設定
             exrcv.BonePositionFilterEnable = true;
@@ -92,8 +109,8 @@ namespace EVMC4U
             //左手当たり判定スフィア生成
             leftSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             leftSphere.transform.parent = leftHand;
-            leftSphere.transform.localPosition = new Vector3(-0.12f, 0f, 0f);
-            leftSphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            leftSphere.transform.localPosition = new Vector3(-offset, 0f, 0f);
+            leftSphere.transform.localScale = new Vector3(size, size, size);
 
             //左手当たり判定スフィアコライダー設定
             var leftCollider = leftSphere.GetComponent<Collider>();
@@ -106,13 +123,13 @@ namespace EVMC4U
             leftRigidBody.isKinematic = true;
 
             //左手当たり判定ヘルパー追加
-            leftHelper = leftSphere.AddComponent<EVMC4U_HandCatch_Helper>();
+            leftHelper = leftSphere.AddComponent<HandCatch_Helper>();
 
             //右手当たり判定スフィア生成
             rightSphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             rightSphere.transform.parent = rightHand;
-            rightSphere.transform.localPosition = new Vector3(0.12f, 0f, 0f);
-            rightSphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            rightSphere.transform.localPosition = new Vector3(offset, 0f, 0f);
+            rightSphere.transform.localScale = new Vector3(size, size, size);
 
             //右手当たり判定スフィアコライダー設定
             var rightCollider = rightSphere.GetComponent<Collider>();
@@ -125,7 +142,7 @@ namespace EVMC4U
             rightRigidBody.isKinematic = true;
 
             //右手当たり判定ヘルパー追加
-            rightHelper = rightSphere.AddComponent<EVMC4U_HandCatch_Helper>();
+            rightHelper = rightSphere.AddComponent<HandCatch_Helper>();
         }
 
         //物理演算のためFixedUpdate
@@ -133,9 +150,11 @@ namespace EVMC4U
         {
             //剥がれ防止で親を設定
             leftSphere.transform.parent = leftHand;
-            leftSphere.transform.localPosition = new Vector3(-0.12f, 0f, 0f);
+            leftSphere.transform.localPosition = new Vector3(-offset, 0f, 0f);
+            leftSphere.transform.localScale = new Vector3(size, size, size);
             rightSphere.transform.parent = rightHand;
-            rightSphere.transform.localPosition = new Vector3(0.12f, 0f, 0f);
+            rightSphere.transform.localPosition = new Vector3(offset, 0f, 0f);
+            rightSphere.transform.localScale = new Vector3(size, size, size);
 
             //表示非表示を反映
             if (ShowColliderOld != ShowCollider) {
@@ -164,6 +183,16 @@ namespace EVMC4U
                     if (CollisionTag != "" && CollisionTag != leftHelper.other.tag) {
                         return;
                     }
+                    //左手ですでに掴んでいるものは掴まない
+                    if (leftHelper.other.gameObject.transform.parent == leftSphere.transform)
+                    {
+                        return;
+                    }
+                    //右手ですでに掴んでいるものは掴まない
+                    if (leftHelper.other.gameObject.transform.parent == rightSphere.transform)
+                    {
+                        return;
+                    }
 
                     //解除用に保持
                     leftCatchedObject = leftHelper.other.gameObject;
@@ -185,6 +214,12 @@ namespace EVMC4U
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        leftCatchedObject.SendMessage("OnCatchedLeftHand");
+                    }
                 }
             }
             else
@@ -207,6 +242,12 @@ namespace EVMC4U
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        leftCatchedObject.SendMessage("OnReleasedLeftHand");
+                    }
                 }
             }
         }
@@ -219,6 +260,16 @@ namespace EVMC4U
                 {
                     //コリジョンタグになにか文字が入っていて、対象と一致しない場合は処理しない
                     if (CollisionTag != "" && CollisionTag != rightHelper.other.tag)
+                    {
+                        return;
+                    }
+                    //左手ですでに掴んでいるものは掴まない
+                    if (rightHelper.other.gameObject.transform.parent == leftSphere.transform)
+                    {
+                        return;
+                    }
+                    //右手ですでに掴んでいるものは掴まない
+                    if (rightHelper.other.gameObject.transform.parent == rightSphere.transform)
                     {
                         return;
                     }
@@ -244,6 +295,12 @@ namespace EVMC4U
 
                     //フィルタ強く
                     exrcv.BoneFilter = InHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        rightCatchedObject.SendMessage("OnCatchedRightHand");
+                    }
                 }
             }
             else
@@ -267,40 +324,87 @@ namespace EVMC4U
 
                     //フィルタ解除
                     exrcv.BoneFilter = NonHoldFilter;
+
+                    //オブジェクトにメッセージを送る
+                    if (signaling)
+                    {
+                        rightCatchedObject.SendMessage("OnReleasedRightHand");
+                    }
                 }
             }
         }
 
         public void KeyInputEvent(EVMC4U.KeyInput key)
         {
-            //Zキーが押されたか
-            if (key.name == "Z")
+            if (!StickyMode)
             {
-                //つかみ・離し
-                CatchLeft(key.active == 1);
+                //Zキーが押されたか
+                if (key.name == LeftKey)
+                {
+                    //つかみ・離し
+                    CatchLeft(key.active == 1);
+                }
+                //Xキー押されたか
+                if (key.name == RightKey)
+                {
+                    //つかみ・離し
+                    CatchRight(key.active == 1);
+                }
             }
-            //Xキー押されたか
-            if (key.name == "X")
-            {
-                //つかみ・離し
-                CatchRight(key.active == 1);
+            else {
+                if (key.active == 1)
+                {
+                    //Zキーが押されたか
+                    if (key.name == LeftKey)
+                    {
+                        //つかみ・離し
+                        stickyLeft = !stickyLeft;
+                        CatchLeft(stickyLeft);
+                    }
+                    //Xキー押されたか
+                    if (key.name == RightKey)
+                    {
+                        //つかみ・離し
+                        stickyRight = !stickyRight;
+                        CatchRight(stickyRight);
+                    }
+                }
             }
         }
 
         public void ControllerInputEvent(EVMC4U.ControllerInput con)
         {
             //トリガー引かれたか
-            if (con.name == "ClickTrigger")
+            if (con.name == ControllerButton)
             {
-                if (con.IsLeft == 1)
+                if (!StickyMode)
                 {
-                    //つかみ・離し
-                    CatchLeft(con.active == 1);
+                    if (con.IsLeft == 1)
+                    {
+                        //つかみ・離し
+                        CatchLeft(con.active == 1);
+                    }
+                    else
+                    {
+                        //つかみ・離し
+                        CatchRight(con.active == 1);
+                    }
                 }
-                else
-                {
-                    //つかみ・離し
-                    CatchRight(con.active == 1);
+                else {
+                    if (con.active == 1) {
+                        if (con.IsLeft == 1)
+                        {
+                            //つかみ・離し
+                            stickyLeft = !stickyLeft;
+                            CatchLeft(stickyLeft);
+                        }
+                        else
+                        {
+                            //つかみ・離し
+                            stickyRight = !stickyRight;
+                            CatchRight(stickyRight);
+                        }
+                    }
                 }
             }
         }

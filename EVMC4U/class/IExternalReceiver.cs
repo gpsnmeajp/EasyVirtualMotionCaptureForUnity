@@ -24,32 +24,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-namespace EVMC4U
-{
-
-    public class EVMC4U_HandCatch_Helper : MonoBehaviour
+namespace EVMC4U {
+    //デイジーチェーン受信の最低限のインターフェース
+    public interface IExternalReceiver
     {
-        public bool Trigger = false;
-        public Collider other;
-
-        private void OnTriggerEnter(Collider other)
-        {
-            this.other = other;
-            Trigger = true;
-
-            GetComponent<MeshRenderer>().material.color = Color.cyan;
-        }
-        private void OnTriggerExit(Collider other)
-        {
-            this.other = other;
-            Trigger = false;
-
-            GetComponent<MeshRenderer>().material.color = Color.white;
-        }
-
+        void MessageDaisyChain(ref uOSC.Message message, int callCount);
+        void UpdateDaisyChain();
     }
 }

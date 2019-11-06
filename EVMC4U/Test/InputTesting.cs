@@ -30,7 +30,7 @@ using UnityEngine;
 
 namespace EVMC4U
 {
-    public class EVMC4UInputTesting : MonoBehaviour
+    public class InputTesting : MonoBehaviour
     {
         public InputReceiver receiver;
         private void Start()

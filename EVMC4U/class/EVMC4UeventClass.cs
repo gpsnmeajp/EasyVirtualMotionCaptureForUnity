@@ -24,28 +24,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-
-namespace EVMC4U
-{
-    public class EVMC4UAddComponentTest : MonoBehaviour
-    {
-        public GameObject Model;
-
-        // Use this for initialization
-        void Start()
-        {
-            var x = gameObject.AddComponent<EVMC4U.ExternalReceiver>();
-            x.Model = Model;
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-    }
+namespace EVMC4U {
+    //イベント定義
+    [Serializable]
+    public class KeyInputEvent : UnityEvent<KeyInput> { };
+    [Serializable]
+    public class ControllerInputEvent : UnityEvent<ControllerInput> { };
+    [Serializable]
+    public class MidiNoteInputEvent : UnityEvent<MidiNote> { };
+    [Serializable]
+    public class MidiCCValueInputEvent : UnityEvent<MidiCCValue> { };
+    [Serializable]
+    public class MidiCCButtonInputEvent : UnityEvent<MidiCCButton> { };
 }

@@ -27,22 +27,38 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using uOSC;
 
 namespace EVMC4U
 {
-    public class EVMC4UDaisyChainTesting : MonoBehaviour, EVMC4U.IExternalReceiver
+    public class FreezeSwitch : MonoBehaviour
     {
-        //デイジーチェーンテスト
-        public void MessageDaisyChain(ref Message message, int callCount)
-        {
-            if (message.address == "/VMC/Ext/T")
-            {
-                Debug.Log(message.address + "[" + (float)message.values[0] + "]");
-            }
+        public ExternalReceiver externalReceiver;
+        public InputReceiver inputReceiver;
 
-            //メッセージ全部Logに出そうとか考えないこと。Unityが死ぬほど送られてきます。
+        public string Key= "スペース";
+        public string Button= "ClickMenu";
+        void Start()
+        {
+            inputReceiver.KeyInputAction.AddListener(OnKey);
+            inputReceiver.ControllerInputAction.AddListener(OnCon);
+        }
+        void OnKey(KeyInput key)
+        {
+            if (key.name == Key) {
+                if (key.active == 1) {
+                    externalReceiver.Freeze = !externalReceiver.Freeze;
+                }
+            }
+        }
+        void OnCon(ControllerInput con)
+        {
+            if (con.name == Button)
+            {
+                if (con.active == 1)
+                {
+                    externalReceiver.Freeze = !externalReceiver.Freeze;
+                }
+            }
         }
     }
-
 }

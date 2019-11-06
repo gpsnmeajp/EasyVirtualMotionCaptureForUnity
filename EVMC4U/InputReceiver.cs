@@ -55,6 +55,13 @@ namespace EVMC4U
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[1];
 
+        //---
+
+        //入力辞書(コールバックではなく定値で取得したい場合に使う)
+        public Dictionary<string, bool> InputDictionary = new Dictionary<string, bool>();
+
+        //---
+
         private ExternalReceiverManager externalReceiverManager = null;
         bool shutdown = false;
 
@@ -72,6 +79,12 @@ namespace EVMC4U
 
             //強制
             CCValuesMonitor = new float[128];
+        }
+
+        //デイジーチェーンを更新
+        public void UpdateDaisyChain()
+        {
+            externalReceiverManager.GetIExternalReceiver(NextReceivers);
         }
 
         public void MessageDaisyChain(ref uOSC.Message message, int callCount)
@@ -133,12 +146,17 @@ namespace EVMC4U
                 {
                     ControllerInputAction.Invoke(con);
                 }
-
-                if (con.IsLeft==1) {
-                    LastInput = "Left: " + con.name + "=" + con.active;
-                }
-                else {
-                    LastInput = "Right: " + con.name + "=" + con.active;
+                if (con.IsAxis == 0) {
+                    if (con.IsLeft == 1)
+                    {
+                        LastInput = "Left-" + con.name + " = " + con.active;
+                        InputDictionary["Left-" + con.name] = (con.active != 0);
+                    }
+                    else
+                    {
+                        LastInput = "Right-" + con.name + " = " + con.active;
+                        InputDictionary["Right-" + con.name] = (con.active != 0);
+                    }
                 }
             }
             //キーボード操作情報 v2.1
@@ -158,7 +176,7 @@ namespace EVMC4U
                     KeyInputAction.Invoke(key);
                 }
 
-                LastInput = "Key " + key.name + "("+key.keycode+")="+key.active;
+                LastInput = "Key-" + key.name +" = "+key.active + " (" + key.keycode + ")";
             }
             // v2.2
             else if (message.address == "/VMC/Ext/Midi/Note"
@@ -179,7 +197,8 @@ namespace EVMC4U
                     MidiNoteInputAction.Invoke(note);
                 }
 
-                LastInput = "Note " + note.active + "/" + note.channel + "/" + note.note + "/" + note.velocity;
+                LastInput = "Note-" + note.note + " = "+note.active + "/" + note.channel + "/" + note.velocity;
+                InputDictionary["Note-" + note.note] = (note.active != 0);
             }
             // v2.2
             else if (message.address == "/VMC/Ext/Midi/CC/Val"
@@ -196,7 +215,7 @@ namespace EVMC4U
                     MidiCCValueInputAction.Invoke(ccvalue);
                 }
 
-                LastInput = "CC Val " + ccvalue.knob + "/" + ccvalue.value;
+                LastInput = "CC Val " + ccvalue.knob + " = " + ccvalue.value;
 
                 if (ccvalue.knob >= 0 && ccvalue.knob < 128) {
                     CCValuesMonitor[ccvalue.knob] = ccvalue.value;
@@ -216,7 +235,8 @@ namespace EVMC4U
                 {
                     MidiCCButtonInputAction.Invoke(ccbutton);
                 }
-                LastInput = "CC Bit " + ccbutton.knob + "/" + ccbutton.active;
+                LastInput = "CC-" + ccbutton.knob + " = " + ccbutton.active;
+                InputDictionary["CC-" + ccbutton.knob] = (ccbutton.active != 0);
             }
         }
     }

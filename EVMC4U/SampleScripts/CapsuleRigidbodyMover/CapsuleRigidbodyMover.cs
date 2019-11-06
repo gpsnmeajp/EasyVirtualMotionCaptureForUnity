@@ -29,10 +29,11 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace EVMC4U
 {
-    public class EVMC4U_CapsuleRigidbodyMover : MonoBehaviour
+    public class CapsuleRigidbodyMover : MonoBehaviour
     {
-        Rigidbody r;
-        public Transform model;
+        public Transform MovePos;
+        public Transform MoveRot;
+        public Transform chest;
 
         EDirection direction = EDirection.STOP;
         bool click = false;
@@ -48,17 +49,16 @@ namespace EVMC4U
         // Start is called before the first frame update
         void Start()
         {
-            r = GetComponent<Rigidbody>();
         }
 
         // Update is called once per frame
         void Update()
         {
             switch (direction) {
-                case EDirection.FORWARD: transform.position += model.forward * 10f * Time.deltaTime; break;
-                case EDirection.BACK: transform.position += model.forward * -10f * Time.deltaTime; break;
-                case EDirection.LEFT: transform.Rotate(new Vector3(0, -100f * Time.deltaTime, 0)); break;
-                case EDirection.RIGHT: transform.Rotate(new Vector3(0, 100f * Time.deltaTime, 0)); break;
+                case EDirection.FORWARD: MovePos.position += chest.forward * 10f * Time.deltaTime; break;
+                case EDirection.BACK: MovePos.position += chest.forward * -10f * Time.deltaTime; break;
+                case EDirection.LEFT: MoveRot.Rotate(new Vector3(0, -100f * Time.deltaTime, 0)); break;
+                case EDirection.RIGHT: MoveRot.Rotate(new Vector3(0, 100f * Time.deltaTime, 0)); break;
                 default: break;
             }
         }
