@@ -79,7 +79,7 @@ namespace EVMC4U
         void Update()
         {
             //カメラがセットされているならば
-            if (VMCControlledCamera != null && VMCControlledCamera.transform != null)
+            if (VMCControlledCamera != null && VMCControlledCamera.transform != null && fov != 0)
             {
                 //カメラ移動フィルタ
                 if (CameraPositionFilterEnable)
