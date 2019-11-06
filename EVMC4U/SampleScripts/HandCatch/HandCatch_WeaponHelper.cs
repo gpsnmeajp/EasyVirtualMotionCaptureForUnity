@@ -35,44 +35,76 @@ namespace EVMC4U
 {
     public class HandCatch_WeaponHelper : MonoBehaviour
     {
+        public Transform CaseParent; //鞘オブジェクト
         public Transform LeftHoldPosition; //左手保持位置
         public Transform RightHoldPosition; //右手保持位置
+
+        //鞘に戻らない限界距離
+        public float Threshold = 0.5f;
+
+        //どれだけふわっと動くか
+        public float Filter = 0.8f;
 
         //初期位置(鞘に収まっている状態)
         Vector3 CasePosition;
         Quaternion CaseRotation;
 
+        //初期位置(鞘に収まっている状態)
+        Vector3 TragetPosition;
+        Quaternion TargetRotation;
+
         void Start()
         {
             CasePosition = transform.localPosition;
             CaseRotation = transform.localRotation;
+
+            TragetPosition = CasePosition;
+            TargetRotation = CaseRotation;
+        }
+
+        void Update()
+        {
+            if (transform.parent != null) {
+                transform.localPosition = Vector3.Lerp(TragetPosition, transform.localPosition, Filter);
+                transform.localRotation = Quaternion.Lerp(TargetRotation, transform.localRotation, Filter);
+            }
         }
 
         void OnCatchedLeftHand()
         {
             Debug.Log("C:L");
-            transform.localPosition = LeftHoldPosition.localPosition;
-            transform.localRotation = LeftHoldPosition.localRotation;
+            TragetPosition = LeftHoldPosition.localPosition;
+            TargetRotation = LeftHoldPosition.localRotation;
         }
         void OnCatchedRightHand()
         {
             Debug.Log("C:R");
-            transform.localPosition = RightHoldPosition.localPosition;
-            transform.localRotation = RightHoldPosition.localRotation;
+            TragetPosition = RightHoldPosition.localPosition;
+            TargetRotation = RightHoldPosition.localRotation;
         }
 
         void OnReleasedLeftHand()
         {
             Debug.Log("R:L");
-            transform.localPosition = CasePosition;
-            transform.localRotation = CaseRotation;
+            OnReleasedRightHand();//同じ処理
         }
 
         void OnReleasedRightHand()
         {
             Debug.Log("R:R");
-            transform.localPosition = CasePosition;
-            transform.localRotation = CaseRotation;
+
+            //計算用に一時的に親にする
+            transform.parent = CaseParent;
+            float distance = Vector3.Distance(CasePosition, transform.localPosition);
+            if (distance < Threshold)
+            {
+                transform.parent = CaseParent;
+                TragetPosition = CasePosition;
+                TargetRotation = CaseRotation;
+            }
+            else {
+                transform.parent = null;
+            }
         }
     }
 }
