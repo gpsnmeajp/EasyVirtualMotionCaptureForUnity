@@ -20,6 +20,9 @@ https://sh-akira.github.io/VirtualMotionCapture/download.html
 **※旧バージョン(～v0.35)では使えません！！！！**  
 可能な限り最新の先行リリース版をお使いください。
 
+Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
+あなたのしたい表現、使いたい機能、アセットを邪魔しません。  
+
 # [説明書とダウンロード方法](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
 # [How to use(English)](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/How-to-use#how-to-use)
 # [お問合せ先](https://discord.gg/QSrDhE8)
