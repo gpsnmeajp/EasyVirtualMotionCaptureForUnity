@@ -8,7 +8,7 @@ VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反�
 トラッキング品質は安心と信頼のバーチャルモーションキャプチャー同等。  
 プロトコルは公開されており、自由に拡張可能。  
 
-こんな画が撮れます！([orange様撮影](https://twitter.com/mikan3134))  
+色々組み合わせるとこんな画が撮れます！([orange様撮影](https://twitter.com/mikan3134))  
 <img src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/orange_pv/HDRP.gif?raw=true"></img>  
   
 ハッシュタグは[#EVMC4U](https://twitter.com/search?q=%23EVMC4U%20)  
