@@ -41,6 +41,7 @@ namespace EVMC4U
         [Header("DeviceReceiver v1.0")]
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
+        public bool RealPosition = false;
 
         [Header("Device Config")]
         public string[] Serials = new string[arrayMax];
@@ -127,73 +128,147 @@ namespace EVMC4U
                 return;
             }
 
-            if (message.address == "/VMC/Ext/Hmd/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
+            if (!RealPosition)
             {
-                pos.x = (float)message.values[1];
-                pos.y = (float)message.values[2];
-                pos.z = (float)message.values[3];
-                rot.x = (float)message.values[4];
-                rot.y = (float)message.values[5];
-                rot.z = (float)message.values[6];
-                rot.w = (float)message.values[7];
+                if (message.address == "/VMC/Ext/Hmd/Pos"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
 
-                devideUpdate("HMD", (string)message.values[0], pos, rot);
-                //Debug.Log("HMD pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                    devideUpdate("HMD", (string)message.values[0], pos, rot);
+                    //Debug.Log("HMD pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
+                // v2.2
+                else if (message.address == "/VMC/Ext/Con/Pos"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
+
+                    devideUpdate("Controller", (string)message.values[0], pos, rot);
+                    //Debug.Log("Con pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
+                // v2.2
+                else if (message.address == "/VMC/Ext/Tra/Pos"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
+
+                    devideUpdate("Tracker", (string)message.values[0], pos, rot);
+                    //Debug.Log("Tra pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
             }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Con/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                pos.x = (float)message.values[1];
-                pos.y = (float)message.values[2];
-                pos.z = (float)message.values[3];
-                rot.x = (float)message.values[4];
-                rot.y = (float)message.values[5];
-                rot.z = (float)message.values[6];
-                rot.w = (float)message.values[7];
+            else {
+                if (message.address == "/VMC/Ext/Hmd/Pos/Local"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
 
-                devideUpdate("Controller", (string)message.values[0], pos, rot);
-                //Debug.Log("Con pos " + (string)message.values[0] + " : " + pos + "/" + rot);
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Tra/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                pos.x = (float)message.values[1];
-                pos.y = (float)message.values[2];
-                pos.z = (float)message.values[3];
-                rot.x = (float)message.values[4];
-                rot.y = (float)message.values[5];
-                rot.z = (float)message.values[6];
-                rot.w = (float)message.values[7];
+                    devideUpdate("HMD", (string)message.values[0], pos, rot);
+                    //Debug.Log("HMD pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
+                // v2.2
+                else if (message.address == "/VMC/Ext/Con/Pos/Local"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
 
-                devideUpdate("Tracker", (string)message.values[0], pos, rot);
-                //Debug.Log("Tra pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                    devideUpdate("Controller", (string)message.values[0], pos, rot);
+                    //Debug.Log("Con pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
+                // v2.2
+                else if (message.address == "/VMC/Ext/Tra/Pos/Local"
+                    && (message.values[0] is string)
+                    && (message.values[1] is float)
+                    && (message.values[2] is float)
+                    && (message.values[3] is float)
+                    && (message.values[4] is float)
+                    && (message.values[5] is float)
+                    && (message.values[6] is float)
+                    && (message.values[7] is float)
+                    )
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
+
+                    devideUpdate("Tracker", (string)message.values[0], pos, rot);
+                    //Debug.Log("Tra pos " + (string)message.values[0] + " : " + pos + "/" + rot);
+                }
+
             }
         }
 
