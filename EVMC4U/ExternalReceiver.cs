@@ -25,6 +25,7 @@
  * SOFTWARE.
  */
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,7 +38,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.0")]
+        [Header("ExternalReceiver v3.1")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
 
@@ -61,9 +62,16 @@ namespace EVMC4U
         public bool BoneRotationFilterEnable = false; //ボーン回転フィルタ
         public float BoneFilter = 0.7f; //ボーンフィルタ係数
 
+
+        [Header("VRM Loader")]
+        public string loadedPath = "";        //読み込み済みVRMパス
+        public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
+
+
         [Header("Status")]
         [SerializeField]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
+        public string OptionString = ""; //VMCから送信されるオプション文字列
 
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[6]; //デイジーチェーン
@@ -130,6 +138,11 @@ namespace EVMC4U
             {
                 //デイジーチェーンスレーブモード
                 StatusMessage = "Waiting for Master...";
+            }
+
+            //初期状態で読み込み済みのモデルが有る場合はVRMの自動読み込みは禁止する
+            if (Model != null) {
+                enableAutoLoadVRM = false;
             }
         }
 
@@ -263,12 +276,6 @@ namespace EVMC4U
                 RootRotationTransform = Model.transform;
             }
 
-            //モデルがないか、モデル姿勢、ルート姿勢が取得できないなら何もしない
-            if (Model == null || Model.transform == null || RootPositionTransform == null || RootRotationTransform == null)
-            {
-                return;
-            }
-
             //モーションデータ送信可否
             if (message.address == "/VMC/Ext/OK"
                 && (message.values[0] is int))
@@ -278,16 +285,49 @@ namespace EVMC4U
                 {
                     StatusMessage = "Waiting for [Load VRM]";
                 }
+                return;
             }
             //データ送信時刻
             else if (message.address == "/VMC/Ext/T"
                 && (message.values[0] is float))
             {
                 time = (float)message.values[0];
+                return;
+            }
+            //VRM自動読み込み
+            else if (message.address == "/VMC/Ext/VRM"
+                && (message.values[0] is string)
+                && (message.values[1] is string)
+                )
+            {
+                string path = (string)message.values[0];
+                string title = (string)message.values[1];
+
+                //前回読み込んだパスと違う場合かつ、読み込みが許可されている場合
+                if (path != loadedPath && enableAutoLoadVRM == true)
+                {
+                    loadedPath = path;
+                    LoadVRM(path);
+                }
+                return;
+            }
+            //オプション文字列
+            else if (message.address == "/VMC/Ext/Opt"
+                && (message.values[0] is string))
+            {
+                OptionString = (string)message.values[0];
+                return;
+            }
+
+
+            //モデルがないか、モデル姿勢、ルート姿勢が取得できないなら以降何もしない
+            if (Model == null || Model.transform == null || RootPositionTransform == null || RootRotationTransform == null)
+            {
+                return;
             }
 
             //Root姿勢
-            else if (message.address == "/VMC/Ext/Root/Pos"
+            if (message.address == "/VMC/Ext/Root/Pos"
                 && (message.values[0] is string)
                 && (message.values[1] is float)
                 && (message.values[2] is float)
@@ -409,6 +449,28 @@ namespace EVMC4U
                     blendShapeProxy.Apply();
                 }
             }
+        }
+
+        //モデルを読み込む
+        private void LoadVRM(string path)
+        {
+            //存在すれば即破壊(異常顔防止)
+            if (Model != null)
+            {
+                Destroy(Model);
+                Model = null;
+            }
+
+            //バイナリの読み込み
+            byte[] VRMdata = File.ReadAllBytes(path);
+            //読み込み
+            VRMImporterContext vrmImporter = new VRMImporterContext();
+            vrmImporter.ParseGlb(VRMdata);
+
+            vrmImporter.LoadAsync(() => {
+                Model = vrmImporter.Root;
+                vrmImporter.ShowMeshes();
+            });
         }
 
         //ボーン位置をキャッシュテーブルに基づいて更新
