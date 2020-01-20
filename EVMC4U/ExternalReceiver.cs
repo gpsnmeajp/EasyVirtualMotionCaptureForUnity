@@ -462,16 +462,21 @@ namespace EVMC4U
             }
 
             //バイナリの読み込み
-            if (File.Exists(path)) {
+            if (File.Exists(path))
+            {
                 byte[] VRMdata = File.ReadAllBytes(path);
                 //読み込み
                 VRMImporterContext vrmImporter = new VRMImporterContext();
                 vrmImporter.ParseGlb(VRMdata);
 
-                vrmImporter.LoadAsync(() => {
+                vrmImporter.LoadAsync(() =>
+                {
                     Model = vrmImporter.Root;
                     vrmImporter.ShowMeshes();
                 });
+            }
+            else {
+                Debug.LogError("VRM load failed.");
             }
         }
 
