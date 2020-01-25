@@ -38,7 +38,7 @@ namespace EVMC4U
     {
         const int arrayMax = 16;
 
-        [Header("DeviceReceiver v1.0")]
+        [Header("DeviceReceiver v1.0a")]
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
         public bool RealPosition = false;
