@@ -376,14 +376,17 @@ namespace EVMC4U
                     offset.z = (float)message.values[13];
 
                     Model.transform.localScale = scale;
-                    Vector3.Scale(RootPositionTransform.position, scale);
+                    RootPositionTransform.position = Vector3.Scale(RootPositionTransform.position, scale);
 
                     //位置同期が有効な場合のみオフセットを反映する
                     if (RootPositionSynchronize)
                     {
-                        Vector3.Scale(offset, scale);
+                        offset = Vector3.Scale(offset, scale);
                         RootPositionTransform.position -= offset;
                     }
+                }
+                else {
+                    Model.transform.localScale = Vector3.one;
                 }
             }
             //ボーン姿勢
