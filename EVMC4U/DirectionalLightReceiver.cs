@@ -36,7 +36,7 @@ namespace EVMC4U
 {
     public class DirectionalLightReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("DirectionalLightReceiver v1.0")]
+        [Header("DirectionalLightReceiver v1.1")]
         public Light VMCControlledLight = null; //VMCディレクショナルライト制御同期
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
@@ -116,21 +116,24 @@ namespace EVMC4U
                 && (message.values[11] is float) //a
                 )
             {
-                pos.x = (float)message.values[1];
-                pos.y = (float)message.values[2];
-                pos.z = (float)message.values[3];
-                rot.x = (float)message.values[4];
-                rot.y = (float)message.values[5];
-                rot.z = (float)message.values[6];
-                rot.w = (float)message.values[7];
-                col.r = (float)message.values[8];
-                col.g = (float)message.values[9];
-                col.b = (float)message.values[10];
-                col.a = (float)message.values[11];
+                if(VMCControlledLight != null && VMCControlledLight.transform != null)
+                {
+                    pos.x = (float)message.values[1];
+                    pos.y = (float)message.values[2];
+                    pos.z = (float)message.values[3];
+                    rot.x = (float)message.values[4];
+                    rot.y = (float)message.values[5];
+                    rot.z = (float)message.values[6];
+                    rot.w = (float)message.values[7];
+                    col.r = (float)message.values[8];
+                    col.g = (float)message.values[9];
+                    col.b = (float)message.values[10];
+                    col.a = (float)message.values[11];
 
-                VMCControlledLight.transform.localPosition = pos;
-                VMCControlledLight.transform.localRotation = rot;
-                VMCControlledLight.color = col;
+                    VMCControlledLight.transform.localPosition = pos;
+                    VMCControlledLight.transform.localRotation = rot;
+                    VMCControlledLight.color = col;
+                }
             }
         }
     }
