@@ -38,7 +38,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.1a")]
+        [Header("ExternalReceiver v3.2")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
 
@@ -477,6 +477,7 @@ namespace EVMC4U
                 vrmImporter.LoadAsync(() =>
                 {
                     Model = vrmImporter.Root;
+                    vrmImporter.EnableUpdateWhenOffscreen();
                     vrmImporter.ShowMeshes();
                 });
             }
