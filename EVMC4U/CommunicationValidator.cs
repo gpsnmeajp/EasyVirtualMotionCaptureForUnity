@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma warning disable 0414,0219
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,13 +37,12 @@ namespace EVMC4U
 {
     public class CommunicationValidator : MonoBehaviour, IExternalReceiver
     {
-        [Header("CommunicationValidator v1.0")]
+        [Header("CommunicationValidator v1.2")]
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
 
         [Header("UI Option")]
         public bool ShowInformation = false;
-        public bool StrictMode = false;
 
         [Header("Status Monitor")]
         [SerializeField]
@@ -144,181 +144,6 @@ namespace EVMC4U
                 && (message.values[0] is float))
             {
                 time = (float)message.values[0];
-            }
-
-            //厳格モード
-            if (StrictMode)
-            {
-                CommunicationValidate(ref message);
-            }
-        }
-
-        //プロトコルチェック(未知の情報がないかチェックする)
-        void CommunicationValidate(ref uOSC.Message message)
-        {
-            if (message.address == "/VMC/Ext/OK"
-                && (message.values[0] is int))
-            {
-                //OK
-            }
-            else if (message.address == "/VMC/Ext/T"
-                && (message.values[0] is float))
-            {
-                //OK
-            }
-            else if (message.address == "/VMC/Ext/Root/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-            //ボーン姿勢
-            else if (message.address == "/VMC/Ext/Bone/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-
-            //ブレンドシェープ同期
-            else if (message.address == "/VMC/Ext/Blend/Val"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                )
-            {
-                //OK
-            }
-            //ブレンドシェープ適用
-            else if (message.address == "/VMC/Ext/Blend/Apply")
-            {
-                //OK
-            }
-            //カメラ姿勢FOV同期 v2.1
-            else if (message.address == "/VMC/Ext/Cam"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                && (message.values[8] is float)
-                )
-            {
-                //OK
-            }
-            //コントローラ操作情報 v2.1
-            else if (message.address == "/VMC/Ext/Con"
-                && (message.values[0] is int)
-                && (message.values[1] is string)
-                && (message.values[2] is int)
-                && (message.values[3] is int)
-                && (message.values[4] is int)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-            //キーボード操作情報 v2.1
-            else if (message.address == "/VMC/Ext/Key"
-                && (message.values[0] is int)
-                && (message.values[1] is string)
-                && (message.values[2] is int)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Midi/Note"
-                && (message.values[0] is int)
-                && (message.values[1] is int)
-                && (message.values[2] is int)
-                && (message.values[3] is float)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Midi/CC/Val"
-                && (message.values[0] is int)
-                && (message.values[1] is float)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Midi/CC/Bit"
-                && (message.values[0] is int)
-                && (message.values[1] is int)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Hmd/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Con/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-            // v2.2
-            else if (message.address == "/VMC/Ext/Tra/Pos"
-                && (message.values[0] is string)
-                && (message.values[1] is float)
-                && (message.values[2] is float)
-                && (message.values[3] is float)
-                && (message.values[4] is float)
-                && (message.values[5] is float)
-                && (message.values[6] is float)
-                && (message.values[7] is float)
-                )
-            {
-                //OK
-            }
-            else
-            {
-                //プロトコルにないアドレスを検出したら以後の処理を一切しない
-                Debug.LogError("[CommunicationValidator] " + message.address + " is not valid");
-                StatusMessage = "Communication error.";
-                shutdown = true;
             }
         }
     }

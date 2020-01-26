@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma warning disable 0414,0219
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace EVMC4U
     {
         const int arrayMax = 16;
 
-        [Header("DeviceReceiver v1.0a")]
+        [Header("DeviceReceiver v1.1")]
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用
         public bool RealPosition = false;

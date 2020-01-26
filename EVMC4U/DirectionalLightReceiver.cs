@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma warning disable 0414,0219
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace EVMC4U
 {
     public class DirectionalLightReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("DirectionalLightReceiver v1.1")]
+        [Header("DirectionalLightReceiver v1.2")]
         public Light VMCControlledLight = null; //VMCディレクショナルライト制御同期
         [SerializeField]
         private string StatusMessage = "";  //Inspector表示用

@@ -24,6 +24,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma warning disable 0414,0219
+
 using System;
 using System.IO;
 using System.Collections;
@@ -38,7 +40,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.2")]
+        [Header("ExternalReceiver v3.3")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
 
@@ -376,13 +378,13 @@ namespace EVMC4U
                     offset.z = (float)message.values[13];
 
                     Model.transform.localScale = scale;
-                    RootPositionTransform.position = Vector3.Scale(RootPositionTransform.position, scale);
+                    RootPositionTransform.localPosition = Vector3.Scale(RootPositionTransform.localPosition, scale);
 
                     //位置同期が有効な場合のみオフセットを反映する
                     if (RootPositionSynchronize)
                     {
                         offset = Vector3.Scale(offset, scale);
-                        RootPositionTransform.position -= offset;
+                        RootPositionTransform.localPosition -= offset;
                     }
                 }
                 else {
