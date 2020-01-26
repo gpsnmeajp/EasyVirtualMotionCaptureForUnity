@@ -575,6 +575,8 @@ namespace EVMC4U
         //1本のボーンの同期
         private void BoneSynchronizeSingle(Transform t, ref HumanBodyBones bone, ref Vector3 pos, ref Quaternion rot, bool posFilter, bool rotFilter)
         {
+            BoneFilter = Mathf.Clamp(BoneFilter, 0f, 1f);
+
             //ボーン位置同期が有効か
             if (BonePositionSynchronize)
             {

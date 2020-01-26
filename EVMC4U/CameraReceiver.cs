@@ -82,6 +82,8 @@ namespace EVMC4U
             //カメラがセットされているならば
             if (VMCControlledCamera != null && VMCControlledCamera.transform != null && fov != 0)
             {
+                CameraFilter = Mathf.Clamp(CameraFilter, 0f, 1f);
+
                 //カメラ移動フィルタ
                 if (CameraPositionFilterEnable)
                 {
