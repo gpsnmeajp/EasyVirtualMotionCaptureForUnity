@@ -1,9 +1,11 @@
 [<img src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/title3.png?raw=true"></img>](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)  
 # [#EVMC4U](https://twitter.com/search?q=%23EVMC4U%20) - EasyVirtualMotionCaptureForUnity
-**かんたんにばもきゃとUnityつなぐやつ**
-VirtualMotionCaptureからOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。   
-Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
+**かんたんにばもきゃとUnityつなぐやつ**  
+[バーチャルモーションキャプチャー](https://sh-akira.github.io/VirtualMotionCapture/)からOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。
+UnityPackage1つで簡単導入、ランタイムでももちろん動作。プロトコルは公開されており拡張可能。  
+  
 あなたのしたい表現、使いたい機能、アセットを邪魔しません。  
+Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
 
 # [説明書とダウンロード方法](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
 # [How to use(English)](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/How-to-use#how-to-use)
