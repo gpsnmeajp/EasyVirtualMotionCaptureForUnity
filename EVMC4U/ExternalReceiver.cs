@@ -68,7 +68,8 @@ namespace EVMC4U
         [Header("VRM Loader")]
         public string loadedPath = "";        //読み込み済みVRMパス
         public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
-
+        public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
+        public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
 
         [Header("Status")]
         [SerializeField]
@@ -287,6 +288,24 @@ namespace EVMC4U
                 {
                     StatusMessage = "Waiting for [Load VRM]";
                 }
+
+                //V2.5 キャリブレーション状態
+                if ((message.values[1] is int) && (message.values[2] is int))
+                {
+                    int calibrationState = (int)message.values[1];
+                    int calibrationMode = (int)message.values[2];
+
+                    //キャリブレーション出来ていないときは隠す
+                    if (HideInUncalibrated) {
+                        Model.SetActive(calibrationState == 3);
+                    }
+                    //スケール同期をキャリブレーションと連動させる
+                    if (SyncCalibrationModeWithScaleOffsetSynchronize) {
+                        RootScaleOffsetSynchronize = !(calibrationMode == 0); //通常モードならオフ、MR系ならオン
+                    }
+
+                }
+
                 return;
             }
             //データ送信時刻
