@@ -66,7 +66,8 @@ namespace EVMC4U
 
 
         [Header("VRM Loader")]
-        public string loadedPath = "";        //読み込み済みVRMパス
+        public string loadedVRMPath = "";        //読み込み済みVRMパス
+        public string loadedVRMName = "";        //読み込み済みVRM名前
         public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
@@ -354,9 +355,10 @@ namespace EVMC4U
                 string title = (string)message.values[1];
 
                 //前回読み込んだパスと違う場合かつ、読み込みが許可されている場合
-                if (path != loadedPath && enableAutoLoadVRM == true)
+                if (path != loadedVRMPath && enableAutoLoadVRM == true)
                 {
-                    loadedPath = path;
+                    loadedVRMPath = path;
+                    loadedVRMName = title;
                     LoadVRM(path);
                 }
                 return;

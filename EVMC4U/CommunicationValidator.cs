@@ -51,6 +51,18 @@ namespace EVMC4U
         public int Available = 0;
         public float time = 0;
 
+        [Header("Receive Status(Read only)")]
+        public bool ReceiveEnable = false;
+        public int ReceivePort = 0;
+        public string LoadedConfigPath = "";
+        public Color backgroundColor = Color.clear;
+        [Header("Window Attribute Info(Read only)")]
+        public bool IsTopMost = false;
+        public bool IsTransparent = false;
+        public bool WindowClickThrough = false;
+        public bool HideBorder = false;
+
+
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[1];
 
@@ -144,6 +156,41 @@ namespace EVMC4U
                 && (message.values[0] is float))
             {
                 time = (float)message.values[0];
+            }
+            //V2.4 受信情報
+            else if (message.address == "/VMC/Ext/Rcv"
+                && (message.values[0] is int)
+                && (message.values[1] is int))
+            {
+                ReceiveEnable = (int)message.values[0] != 0;
+                ReceivePort = (int)message.values[1];
+            }
+            //V2.4 背景色情報
+            else if (message.address == "/VMC/Ext/Setting/Color"
+                && (message.values[0] is float)
+                && (message.values[1] is float)
+                && (message.values[2] is float)
+                && (message.values[3] is float))
+            {
+                backgroundColor = new Color((float)message.values[0], (float)message.values[1], (float)message.values[2], (float)message.values[3]);
+            }
+            //V2.4 ウィンドウ情報
+            else if (message.address == "/VMC/Ext/Setting/Win"
+                && (message.values[0] is int)
+                && (message.values[1] is int)
+                && (message.values[2] is int)
+                && (message.values[3] is int))
+            {
+                IsTopMost = (int)message.values[0] != 0;
+                IsTransparent = (int)message.values[1] != 0;
+                WindowClickThrough = (int)message.values[2] != 0;
+                HideBorder = (int)message.values[3] != 0;
+            }
+            //V2.5 読み込み済み設定ファイルパス情報
+            else if (message.address == "/VMC/Ext/Config"
+                && (message.values[0] is string))
+            {
+                LoadedConfigPath = (string)message.values[0];
             }
         }
     }
