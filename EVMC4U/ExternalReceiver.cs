@@ -75,6 +75,9 @@ namespace EVMC4U
         [SerializeField]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
         public string OptionString = ""; //VMCから送信されるオプション文字列
+        public int LastPacketframeCounterInFrame = 0; //1フレーム中に受信したパケットフレーム数
+        public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
+        public int DropPackets = 0; //廃棄されたパケット(not パケットフレーム)
 
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[6]; //デイジーチェーン
@@ -117,6 +120,12 @@ namespace EVMC4U
 
         //エラー・無限ループ検出フラグ(trueで一切の受信を停止する)
         bool shutdown = false;
+
+        //フレーム間パケットフレーム数測定
+        int PacketCounterInFrame = 0;
+
+        //1フレームに30パケットフレーム来たら、同一フレーム内でそれ以上は受け取らない。
+        const int PACKET_LIMIT_MAX = 30;
 
         //メッセージ処理一時変数struct(負荷対策)
         Vector3 pos;
@@ -185,6 +194,9 @@ namespace EVMC4U
             //Freeze有効時は動きを一切止める
             if (Freeze) { return; }
 
+            LastPacketframeCounterInFrame = PacketCounterInFrame;
+            PacketCounterInFrame = 0;
+
             //5.6.3p1などRunInBackgroundが既定で無効な場合Unityが極めて重くなるため対処
             Application.runInBackground = true;
 
@@ -246,6 +258,12 @@ namespace EVMC4U
 
             //エラー・無限ループ時は処理をしない
             if (shutdown) {
+                return;
+            }
+
+            //パケットリミッターが有効な場合、一定以上のパケットフレーム/フレーム数を観測した場合、次のフレームまでパケットを捨てる
+            if (PacktLimiter && (LastPacketframeCounterInFrame > PACKET_LIMIT_MAX)) {
+                DropPackets++;
                 return;
             }
 
@@ -323,6 +341,7 @@ namespace EVMC4U
                 && (message.values[0] is float))
             {
                 time = (float)message.values[0];
+                PacketCounterInFrame++; //フレーム中のパケットフレーム数を測定
                 return;
             }
             //VRM自動読み込み
