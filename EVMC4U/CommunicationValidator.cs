@@ -51,6 +51,9 @@ namespace EVMC4U
         public int Available = 0;
         public float time = 0;
 
+        public CalibrationState calibrationState = 0;
+        public CalibrationMode calibrationMode = 0;
+
         [Header("Receive Status(Read only)")]
         public bool ReceiveEnable = false;
         public int ReceivePort = 0;
@@ -149,6 +152,13 @@ namespace EVMC4U
                 }
                 else {
                     StatusMessage = "OK";
+                }
+
+                //V2.5 キャリブレーション状態
+                if ((message.values[1] is int) && (message.values[2] is int))
+                {
+                    calibrationState = (CalibrationState)message.values[1];
+                    calibrationMode = (CalibrationMode)message.values[2];
                 }
             }
             //データ送信時刻

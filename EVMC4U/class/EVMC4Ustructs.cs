@@ -72,4 +72,24 @@ namespace EVMC4U {
         public int knob;
         public float active;
     }
+
+    public enum CalibrationState
+    {
+        Uncalibrated = 0,
+        WaitingForCalibrating = 1,
+        Calibrating = 2,
+        Calibrated = 3,
+    }
+    public enum CalibrationMode
+    {
+        Normal = 0,
+        MR_Hand = 1,
+        MR_Floor = 2,
+    }
+    public enum VirtualDevice
+    {
+        HMD = 0,
+        Controller = 1,
+        Tracker = 2,
+    }
 }

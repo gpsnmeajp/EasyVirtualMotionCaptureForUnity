@@ -41,6 +41,56 @@ namespace EVMC4U
     public class ExternalController : MonoBehaviour
     {
         [Header("ExternalController v1.1")]
-        int zero = 0;
+        public bool enable = false;
+        [Header("Frame Period")]
+        public int PeriodOfStatus = 1;
+        public int PeriodOfRoot = 1;
+        public int PeriodOfBone = 1;
+        public int PeriodOfBlendShape = 1;
+        public int PeriodOfCamera = 1;
+        public int PeriodOfDevices = 1;
+        public bool PeriodEnable = false;
+
+        [Header("Virtual Device")]
+        public VirtualDevice DeviceMode = VirtualDevice.Tracker;
+        public Transform DeviceTransform = null;
+        public String DeviceSerial = "VIRTUAL_DEVICE";
+        public bool DeviceEnable = false;
+
+        [Header("Virtual MIDI CC")]
+        public int MidiKnob = 0;
+        public float MidiValue = 0f;
+        public bool MidiEnable = false;
+
+        [Header("Camera Control")]
+        public Transform CameraTransform = null;
+        public float CameraFOV = 30f;
+        public bool CameraEnable = false;
+
+        [Header("BlendShapeProxy")]
+        public string BlendShapeName = "";
+        public float BlendShapeValue = 0f;
+        public bool BlendShapeEnable = false;
+
+        [Header("Eye Tracking Target Position")]
+        public Transform EyeTrackingTargetTransform = null;
+        public bool EyeTrackingTargetEnable = false;
+
+        [Header("Response String")]
+        public string ResponseString = "";
+        public bool ResponseStringEnable = false;
+
+        [Header("Calibration")]
+        public bool CalibrationReady = false;
+        public CalibrationMode calibrationMode = 0;
+        public bool CalibrationExecute = false;
+
+        [Header("Config")]
+        public string ConfigPath = "";
+        public bool ConfigLoad = false;
+
+        [Header("Request Information")]
+        public bool RequestInformation = false;
+
     }
 }
