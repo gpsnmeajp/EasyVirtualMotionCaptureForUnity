@@ -124,8 +124,13 @@ namespace EVMC4U
         Vector3 scale;
         Vector3 offset;
 
-        void Start()
+        public void Start()
         {
+            //nullチェック
+            if (NextReceivers == null)
+            {
+                NextReceivers = new GameObject[0];
+            }
             //NextReciverのインターフェースを取得する
             externalReceiverManager = new ExternalReceiverManager(NextReceivers);
 
@@ -152,22 +157,27 @@ namespace EVMC4U
         //デイジーチェーンを更新
         public void UpdateDaisyChain()
         {
+            //nullチェック
+            if (NextReceivers == null)
+            {
+                NextReceivers = new GameObject[0];
+            }
             externalReceiverManager.GetIExternalReceiver(NextReceivers);
         }
 
         //外部から通信状態を取得するための公開関数
-        int GetAvailable()
+        public int GetAvailable()
         {
             return Available;
         }
 
         //外部から通信時刻を取得するための公開関数
-        float GetRemoteTime()
+        public float GetRemoteTime()
         {
             return time;
         }
 
-        void Update()
+        public void Update()
         {
             //エラー・無限ループ時は処理をしない
             if (shutdown) { return; }
@@ -296,7 +306,7 @@ namespace EVMC4U
                     int calibrationMode = (int)message.values[2];
 
                     //キャリブレーション出来ていないときは隠す
-                    if (HideInUncalibrated) {
+                    if (HideInUncalibrated && Model != null) {
                         Model.SetActive(calibrationState == 3);
                     }
                     //スケール同期をキャリブレーションと連動させる

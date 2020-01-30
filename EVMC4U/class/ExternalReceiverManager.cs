@@ -45,6 +45,9 @@ namespace EVMC4U {
         {
             //リストをクリア
             receivers.Clear();
+            if (gameObjects == null) {
+                return;
+            }
 
             //GameObjectを調べる
             foreach (var g in gameObjects)
