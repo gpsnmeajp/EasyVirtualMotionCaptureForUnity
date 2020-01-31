@@ -40,7 +40,7 @@ namespace EVMC4U
     [RequireComponent(typeof(uOSC.uOscClient))]
     public class ExternalController : MonoBehaviour
     {
-        [Header("ExternalController v1.1")]
+        [Header("ExternalController v1.0")]
         public bool enable = true;
         [Header("Frame Period")]
         public int PeriodOfStatus = 1;
