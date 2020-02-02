@@ -65,19 +65,22 @@ namespace EVMC4U
         public bool BoneRotationFilterEnable = false; //ボーン回転フィルタ
         public float BoneFilter = 0.7f; //ボーンフィルタ係数
 
-
-        [Header("VRM Loader (Read only)")]
-        public string loadedVRMPath = "";        //読み込み済みVRMパス
-        public string loadedVRMName = "";        //読み込み済みVRM名前
+        [Header("VRM Loader Option")]
         public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
+
+        [Header("Other Option")]
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
-        public GameObject LoadedModelParent = null; //読み込んだモデルの親
 
         [Header("Status (Read only)")]
         [SerializeField]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
         public string OptionString = ""; //VMCから送信されるオプション文字列
+
+        public string loadedVRMPath = "";        //読み込み済みVRMパス
+        public string loadedVRMName = "";        //読み込み済みVRM名前
+        public GameObject LoadedModelParent = null; //読み込んだモデルの親
+
         public int LastPacketframeCounterInFrame = 0; //1フレーム中に受信したパケットフレーム数
         public int DropPackets = 0; //廃棄されたパケット(not パケットフレーム)
 
