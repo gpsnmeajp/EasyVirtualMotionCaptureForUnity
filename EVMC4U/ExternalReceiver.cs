@@ -43,6 +43,7 @@ namespace EVMC4U
         [Header("ExternalReceiver v3.4")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
+        public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
 
         [Header("Root Synchronize Option")]
         public Transform RootPositionTransform = null; //VR向けroot位置同期オブジェクト指定
@@ -65,19 +66,19 @@ namespace EVMC4U
         public float BoneFilter = 0.7f; //ボーンフィルタ係数
 
 
-        [Header("VRM Loader")]
+        [Header("VRM Loader (Read only)")]
         public string loadedVRMPath = "";        //読み込み済みVRMパス
         public string loadedVRMName = "";        //読み込み済みVRM名前
         public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
+        public GameObject LoadedModelParent = null; //読み込んだモデルの親
 
-        [Header("Status")]
+        [Header("Status (Read only)")]
         [SerializeField]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
         public string OptionString = ""; //VMCから送信されるオプション文字列
         public int LastPacketframeCounterInFrame = 0; //1フレーム中に受信したパケットフレーム数
-        public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
         public int DropPackets = 0; //廃棄されたパケット(not パケットフレーム)
 
         [Header("Daisy Chain")]
@@ -517,6 +518,10 @@ namespace EVMC4U
                 Destroy(Model);
                 Model = null;
             }
+            if (LoadedModelParent != null) {
+                Destroy(LoadedModelParent);
+                LoadedModelParent = null;
+            }
 
             //バイナリの読み込み
             if (File.Exists(path))
@@ -529,6 +534,14 @@ namespace EVMC4U
                 vrmImporter.LoadAsync(() =>
                 {
                     Model = vrmImporter.Root;
+
+                    //ExternalReceiverの下にぶら下げる
+                    LoadedModelParent = new GameObject();
+                    LoadedModelParent.transform.SetParent(transform, false);
+                    LoadedModelParent.name = "LoadedModelParent";
+                    //その下にモデルをぶら下げる
+                    Model.transform.SetParent(LoadedModelParent.transform, false);
+
                     vrmImporter.EnableUpdateWhenOffscreen();
                     vrmImporter.ShowMeshes();
                 });
