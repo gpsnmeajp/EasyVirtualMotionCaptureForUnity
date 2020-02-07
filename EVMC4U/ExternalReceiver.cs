@@ -40,7 +40,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.4")]
+        [Header("ExternalReceiver v3.5")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
         public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
