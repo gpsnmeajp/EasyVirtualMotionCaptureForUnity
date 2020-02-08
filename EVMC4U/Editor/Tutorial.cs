@@ -26,6 +26,8 @@
  */
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.AnimatedValues;
+using UnityEngine.Events;
 namespace EVMC4U
 {
     public class Tutorial : EditorWindow
@@ -33,6 +35,7 @@ namespace EVMC4U
         static Texture2D texture;
         static GUIStyle style = new GUIStyle();
         static int page = 1;
+        static AnimFloat anim = new AnimFloat(0.001f);
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()
@@ -50,10 +53,25 @@ namespace EVMC4U
             var window = GetWindow<Tutorial>();
             window.maxSize = new Vector2(400, 400);
             window.minSize = window.maxSize;
+
+            anim.value = 0.001f;
+            anim.speed = 10f;
+            anim.target = 0.001f;
+            anim.valueChanged = null;
+            page = 1;
         }
 
         void OnGUI()
         {
+            if (anim.valueChanged == null) {
+                var repaintEvent = new UnityEvent();
+                repaintEvent.AddListener(() => Repaint());
+                anim.valueChanged = repaintEvent;
+            }
+            if (anim.value > anim.target-0.1f) {
+                anim.target = 0.001f;
+            }
+
             //背景描画
             if (texture == null)
             {
@@ -65,7 +83,8 @@ namespace EVMC4U
                 return;
             }
             else {
-                EditorGUI.DrawPreviewTexture(new Rect(0, 0, 400, 400), texture);
+                EditorGUI.DrawPreviewTexture(new Rect(0,0, 400, 400), texture);
+                EditorGUI.DrawPreviewTexture(new Rect(anim.value, anim.value, 400 - anim.value*2, 400 - anim.value * 2), texture);
             }
 
             //GUI制御
@@ -94,12 +113,13 @@ namespace EVMC4U
         void loadSlide(int p) {
             page = p;
             texture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/EVMC4U/manual/スライド" + p+".png");
+            anim.target = 2f;
         }
         void urlButton(string url) {
             if (GUI.Button(new Rect(5, 8, 388, 320), new GUIContent(), style))
             {
                 System.Diagnostics.Process.Start(url);
-                loadSlide(page + 1);
+                anim.target = 5f;
             }
         }
 
@@ -122,10 +142,12 @@ namespace EVMC4U
             if (GUI.Button(new Rect(25, 180 + 65, 365, 55), new GUIContent(), style))
             {
                 System.Diagnostics.Process.Start("https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki");
+                anim.target = 5f;
             }
             if (GUI.Button(new Rect(25, 180 + 65 * 2, 365, 55), new GUIContent(), style))
             {
                 System.Diagnostics.Process.Start("https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Discord");
+                anim.target = 5f;
             }
         }
 
