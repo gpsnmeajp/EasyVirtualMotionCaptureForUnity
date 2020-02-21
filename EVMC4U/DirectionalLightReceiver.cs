@@ -83,7 +83,19 @@ namespace EVMC4U
 
             StatusMessage = "OK";
 
-            ProcessMessage(ref message);
+            //異常を検出して動作停止
+            try
+            {
+                ProcessMessage(ref message);
+            }
+            catch (Exception e)
+            {
+                StatusMessage = "Error: Exception";
+                Debug.LogError(" --- Communication Error ---");
+                Debug.LogError(e.ToString());
+                shutdown = true;
+                return;
+            }
 
             if (!externalReceiverManager.SendNextReceivers(message, callCount))
             {

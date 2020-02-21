@@ -124,7 +124,19 @@ namespace EVMC4U
             CallCountMonitor = callCount;
             StatusMessage = "OK";
 
-            ProcessMessage(ref message);
+            //異常を検出して動作停止
+            try
+            {
+                ProcessMessage(ref message);
+            }
+            catch (Exception e)
+            {
+                StatusMessage = "Error: Exception";
+                Debug.LogError(" --- Communication Error ---");
+                Debug.LogError(e.ToString());
+                shutdown = true;
+                return;
+            }
 
             if (!externalReceiverManager.SendNextReceivers(message, callCount))
             {
@@ -154,11 +166,14 @@ namespace EVMC4U
                     StatusMessage = "OK";
                 }
 
-                //V2.5 キャリブレーション状態
-                if ((message.values[1] is int) && (message.values[2] is int))
+                //V2.5 キャリブレーション状態(長さ3以上)
+                if (message.values.Length >= 3)
                 {
-                    calibrationState = (CalibrationState)message.values[1];
-                    calibrationMode = (CalibrationMode)message.values[2];
+                    if ((message.values[1] is int) && (message.values[2] is int))
+                    {
+                        calibrationState = (CalibrationState)message.values[1];
+                        calibrationMode = (CalibrationMode)message.values[2];
+                    }
                 }
             }
             //データ送信時刻

@@ -274,7 +274,18 @@ namespace EVMC4U
 
             //メッセージを処理
             if (!Freeze) {
-                ProcessMessage(ref message);
+                //異常を検出して動作停止
+                try
+                {
+                    ProcessMessage(ref message);
+                }
+                catch (Exception e) {
+                    StatusMessage = "Error: Exception";
+                    Debug.LogError(" --- Communication Error ---");
+                    Debug.LogError(e.ToString());
+                    shutdown = true;
+                    return;
+                }
             }
 
             //次のデイジーチェーンへ伝える
@@ -322,23 +333,26 @@ namespace EVMC4U
                     StatusMessage = "Waiting for [Load VRM]";
                 }
 
-                //V2.5 キャリブレーション状態
-                if ((message.values[1] is int) && (message.values[2] is int))
-                {
-                    int calibrationState = (int)message.values[1];
-                    int calibrationMode = (int)message.values[2];
+                //V2.5 キャリブレーション状態(長さ3以上)
+                if (message.values.Length >= 3) {
+                    if ((message.values[1] is int) && (message.values[2] is int))
+                    {
+                        int calibrationState = (int)message.values[1];
+                        int calibrationMode = (int)message.values[2];
 
-                    //キャリブレーション出来ていないときは隠す
-                    if (HideInUncalibrated && Model != null) {
-                        Model.SetActive(calibrationState == 3);
-                    }
-                    //スケール同期をキャリブレーションと連動させる
-                    if (SyncCalibrationModeWithScaleOffsetSynchronize) {
-                        RootScaleOffsetSynchronize = !(calibrationMode == 0); //通常モードならオフ、MR系ならオン
-                    }
+                        //キャリブレーション出来ていないときは隠す
+                        if (HideInUncalibrated && Model != null)
+                        {
+                            Model.SetActive(calibrationState == 3);
+                        }
+                        //スケール同期をキャリブレーションと連動させる
+                        if (SyncCalibrationModeWithScaleOffsetSynchronize)
+                        {
+                            RootScaleOffsetSynchronize = !(calibrationMode == 0); //通常モードならオフ、MR系ならオン
+                        }
 
+                    }
                 }
-
                 return;
             }
             //データ送信時刻
