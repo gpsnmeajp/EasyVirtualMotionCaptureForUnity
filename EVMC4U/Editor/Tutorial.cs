@@ -59,6 +59,7 @@ namespace EVMC4U
             anim.target = 0.001f;
             anim.valueChanged = null;
             page = 1;
+            texture = null;
         }
 
         void OnGUI()
