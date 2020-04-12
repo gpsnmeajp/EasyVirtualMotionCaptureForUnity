@@ -27,6 +27,7 @@
 #pragma warning disable 0414,0219
 
 using System;
+using System.Reflection;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
@@ -71,6 +72,7 @@ namespace EVMC4U
         [Header("Other Option")]
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
+        public bool BlendShapeCaseWorkAround = true; //ブレンドシェープ互換性オプション(UniVRM v0.53→v0.55)
 
         [Header("Status (Read only)")]
         [SerializeField]
@@ -119,6 +121,14 @@ namespace EVMC4U
         //ボーン情報テーブル
         Dictionary<HumanBodyBones, Vector3> HumanBodyBonesPositionTable = new Dictionary<HumanBodyBones, Vector3>();
         Dictionary<HumanBodyBones, Quaternion> HumanBodyBonesRotationTable = new Dictionary<HumanBodyBones, Quaternion>();
+
+        //ブレンドシェープ互換性処理テーブル
+        Dictionary<string, string> blendShapeProxyCaseConverter = new Dictionary<string, string>(); //ノンケースセンシティブ(小文字)→ケースセンシティブ
+        Dictionary<string, string> blendShapeProxyCaseBuffer = new Dictionary<string, string>(); //通信入力→小文字
+
+        Dictionary<string, BlendShapePreset> BlendShapePresetTable = new Dictionary<string, BlendShapePreset>(); //プリセットキャッシュテーブル
+        Dictionary<string, string> BlendShapePresetCaseConverter = new Dictionary<string, string>(); //小文字→プリセット名テーブル
+
 
         //uOSCサーバー
         uOSC.uOscServer server = null;
@@ -238,7 +248,55 @@ namespace EVMC4U
                 animator = Model.GetComponent<Animator>();
                 blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
                 OldModel = Model;
+
                 Debug.Log("[ExternalReceiver] New model detected");
+
+                //v0.55ブレンドシェープ仕様変更対応
+                if (VRMVersion.MAJOR == 0 && VRMVersion.MINOR > 53)
+                {
+                    //ブレンドシェープ小文字変換テーブルをクリアする(通信用)
+                    blendShapeProxyCaseBuffer.Clear();
+
+                    //ブレンドシェーププリセット変換テーブルを作成する
+                    //Debug.Log("-- Make BlendShapeProxy TypeConverter Table --");
+                    foreach (string presetName in Enum.GetNames(typeof(BlendShapePreset)))
+                    {
+                        BlendShapePresetCaseConverter[presetName.ToLower()] = presetName;
+
+                        //Debug.Log("Register Table: " + presetName.ToLower() + " -> " + presetName);
+                    }
+                    //Debug.Log("-- End BlendShapeProxy TypeConverter Table --");
+
+                    //ブレンドシェープ互換性テーブルを作成する(非ケースセンシティブ->ケースセンシティブ)
+                    blendShapeProxyCaseConverter.Clear();
+                    //Debug.Log("-- Make BlendShapeProxy CaseConverter Table --");
+
+                    //小文字をキーにした辞書を作成
+                    foreach (var c in blendShapeProxy.BlendShapeAvatar.Clips)
+                    {
+                        try
+                        {
+                            var k = BlendShapeKey.CreateFrom(c);
+                            FieldInfo fieldInfo = typeof(BlendShapeKey).GetField("m_name", BindingFlags.NonPublic | BindingFlags.Instance);
+                            string RawKey = (string)fieldInfo.GetValue(k);
+                            //Debug.Log("UniVRM: " + k.Name + " Refrection:" + RawKey);
+
+                            string key = k.ToString().ToLower();
+                            string keyname = k.Name.ToLower();
+                            blendShapeProxyCaseConverter[key] = RawKey;
+                            blendShapeProxyCaseConverter[keyname] = RawKey;
+
+                            //Debug.Log("Register Table: " + key + " -> " + RawKey);
+                            //Debug.Log("Register Table: " + keyname + " -> " + RawKey);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogError(e.ToString());
+                        }
+                    }
+
+                    //Debug.Log("-- End BlendShapeProxy CaseConverter Table --");
+                }
             }
 
             BoneSynchronizeByTable();
@@ -513,7 +571,71 @@ namespace EVMC4U
             {
                 if (BlendShapeSynchronize && blendShapeProxy != null)
                 {
-                    blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
+                    //v0.55ブレンドシェープ仕様変更対応
+                    //ワークアラウンドが有効か
+                    if (VRMVersion.MAJOR == 0 && VRMVersion.MINOR > 53 && BlendShapeCaseWorkAround)
+                    {
+                        //まず、小文字変換テーブルを作成する
+                        string RawKey = (string)message.values[0];
+                        string CaseSensitiveKey = "";
+                        string NoCaseSensitiveKey = "";
+
+                        //小文字変換テーブルに存在しなければ
+                        if (!blendShapeProxyCaseBuffer.TryGetValue(RawKey, out NoCaseSensitiveKey))
+                        {
+                            //小文字変換テーブルに登録する
+                            blendShapeProxyCaseBuffer[RawKey] = RawKey.ToLower();
+                            NoCaseSensitiveKey = RawKey.ToLower();
+
+                            //Debug.Log("Register to CaseBuffer:" + RawKey + " -> " + NoCaseSensitiveKey);
+                        }
+
+                        //小文字変換された結果で、まずプリセットに存在するか確認する
+                        string presetName = "";
+                        BlendShapePreset preset = BlendShapePreset.Unknown;
+                        //プリセット変換テーブルで見つかるか
+                        if (BlendShapePresetCaseConverter.TryGetValue(NoCaseSensitiveKey, out presetName))
+                        {
+                            //ENUMテーブルで見つかるか
+                            if (BlendShapePresetTryParse(ref presetName, out preset))
+                            {
+                                //見つかった
+                                blendShapeProxy.AccumulateValue(preset, (float)message.values[1]);
+                                //Debug.Log("Key Found: " + NoCaseSensitiveKey + "->" + preset.ToString());
+                            }
+                            else
+                            {
+                                //見つからない
+                                preset = BlendShapePreset.Unknown;
+                            }
+                        }
+                        else
+                        {
+                            //見つからない
+                            preset = BlendShapePreset.Unknown;
+                        }
+
+                        //プリセットに該当するものがなかった場合
+                        if (preset == BlendShapePreset.Unknown)
+                        {
+                            //小文字変換された結果を使って、ケースセンシティブな文字列に変換する
+                            if (blendShapeProxyCaseConverter.TryGetValue(NoCaseSensitiveKey, out CaseSensitiveKey))
+                            {
+                                //独自キーとしてUniVRMにわたす
+                                blendShapeProxy.AccumulateValue(CaseSensitiveKey, (float)message.values[1]);
+                                //Debug.Log("Key Convert: " + NoCaseSensitiveKey + "->" + CaseSensitiveKey);
+                            }
+                            else
+                            {
+                                //Debug.Log("Key not found");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //通常通り適用する
+                        blendShapeProxy.AccumulateValue((string)message.values[0], (float)message.values[1]);
+                    }
                 }
             }
             //ブレンドシェープ適用
@@ -693,12 +815,14 @@ namespace EVMC4U
                 //キャッシュテーブルから返す
                 bone = HumanBodyBonesTable[boneName];
                 //ただしLastBoneは発見しなかったことにする(無効値として扱う)
-                if (bone == HumanBodyBones.LastBone) {
+                if (bone == HumanBodyBones.LastBone)
+                {
                     return false;
                 }
                 return true;
             }
-            else {
+            else
+            {
                 //キャッシュテーブルにない場合、検索する
                 var res = EnumTryParse<HumanBodyBones>(boneName, out bone);
                 if (!res)
@@ -708,6 +832,31 @@ namespace EVMC4U
                 }
                 //キャシュテーブルに登録する
                 HumanBodyBonesTable.Add(boneName, bone);
+                return res;
+            }
+        }
+
+        //BlendShapePresetをキャッシュして高速化
+        private bool BlendShapePresetTryParse(ref string presetName, out BlendShapePreset preset)
+        {
+            //キャッシュテーブルに存在するなら
+            if (BlendShapePresetTable.ContainsKey(presetName))
+            {
+                //キャッシュテーブルから返す
+                preset = BlendShapePresetTable[presetName];
+                return true;
+            }
+            else
+            {
+                //キャッシュテーブルにない場合、検索する
+                var res = EnumTryParse<BlendShapePreset>(presetName, out preset);
+                if (!res)
+                {
+                    //見つからなかった場合はUnknownとして登録する(無効値として扱う)ことにより次回から検索しない
+                    preset = BlendShapePreset.Unknown;
+                }
+                //キャシュテーブルに登録する
+                BlendShapePresetTable.Add(presetName, preset);
                 return res;
             }
         }
