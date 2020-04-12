@@ -252,7 +252,7 @@ namespace EVMC4U
                 Debug.Log("[ExternalReceiver] New model detected");
 
                 //v0.55ブレンドシェープ仕様変更対応
-                if (VRMVersion.MAJOR == 0 && VRMVersion.MINOR > 53)
+                if (VRMVersion.MAJOR >= 0 && VRMVersion.MINOR > 53)
                 {
                     //ブレンドシェープ小文字変換テーブルをクリアする(通信用)
                     blendShapeProxyCaseBuffer.Clear();
@@ -573,7 +573,7 @@ namespace EVMC4U
                 {
                     //v0.55ブレンドシェープ仕様変更対応
                     //ワークアラウンドが有効か
-                    if (VRMVersion.MAJOR == 0 && VRMVersion.MINOR > 53 && BlendShapeCaseWorkAround)
+                    if (VRMVersion.MAJOR >= 0 && VRMVersion.MINOR > 53 && BlendShapeCaseWorkAround)
                     {
                         //まず、小文字変換テーブルを作成する
                         string RawKey = (string)message.values[0];
