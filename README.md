@@ -2,7 +2,7 @@
 # [#EVMC4U](https://twitter.com/search?q=%23EVMC4U%20) - EasyVirtualMotionCaptureForUnity
 **かんたんにばもきゃとUnityつなぐやつ**  
 [バーチャルモーションキャプチャー](https://sh-akira.github.io/VirtualMotionCapture/)からOSCで姿勢情報を受信してUnityシーンに反映するスクリプト群です。  
-UnityPackage1つで簡単導入、ランタイムでももちろん動作。プロトコルは公開されており拡張可能。  
+UnityPackage1つで簡単導入、ランタイムでももちろん動作。プロトコルは[VirtualMotionCaptureProtocol](https://sh-akira.github.io/VirtualMotionCaptureProtocol/)に準拠。  
   
 あなたのしたい表現、使いたい機能、アセットを邪魔しません。  
 Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
