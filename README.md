@@ -7,6 +7,9 @@ UnityPackage1つで簡単導入、ランタイムでももちろん動作。プ�
 あなたのしたい表現、使いたい機能、アセットを邪魔しません。  
 Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
 
+VMC Protocol 対応  
+<img src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/vmpc_logo_128x128.png?raw=true"></img>
+
 # [説明書とダウンロード方法](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki)
 # [How to use(English)](https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/How-to-use#how-to-use)
 # [お問合せ先(Discordサーバー)](https://discord.gg/nGapSR7)
