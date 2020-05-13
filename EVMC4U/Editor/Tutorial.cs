@@ -28,6 +28,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine.Events;
+using VRM;
 namespace EVMC4U
 {
     public class Tutorial : EditorWindow
@@ -36,11 +37,12 @@ namespace EVMC4U
         static GUIStyle style = new GUIStyle();
         static int page = 1;
         static AnimFloat anim = new AnimFloat(0.001f);
+        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 53;
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()
         {
-            if (EditorUserSettings.GetConfigValue("Opened") != "1") {
+            if (EditorUserSettings.GetConfigValue("Opened") != "1" || (check && EditorUserSettings.GetConfigValue("VRMCheckCaution") != "1")) {
                 Open();
             }
         }
@@ -60,6 +62,16 @@ namespace EVMC4U
             anim.valueChanged = null;
             page = 1;
             texture = null;
+
+            //バージョンチェック
+            if (check)
+            {
+                EditorUserSettings.SetConfigValue("VRMCheckCaution", "1");
+                page = 0;
+            }
+            else {
+                EditorUserSettings.SetConfigValue("VRMCheckCaution", "0");
+            }
         }
 
         void OnGUI()
@@ -76,7 +88,13 @@ namespace EVMC4U
             //背景描画
             if (texture == null)
             {
-                loadSlide(1);
+                if (page == 0)
+                {
+                    loadSlide(page);
+                }
+                else {
+                    loadSlide(1);
+                }
             }
             if (texture == null)
             {
@@ -90,6 +108,9 @@ namespace EVMC4U
 
             //GUI制御
             switch (page) {
+                case 0:
+                    agreeButtons();
+                    break;
                 case 1:
                     toppageButtons();
                     break;
@@ -123,7 +144,13 @@ namespace EVMC4U
                 anim.target = 5f;
             }
         }
-
+        void agreeButtons()
+        {
+            if (GUI.Button(new Rect(7, 336, 185+ 194, 55), new GUIContent(), style))
+            {
+                loadSlide(page + 1);
+            }
+        }
         void slideButtons()
         {
             if (GUI.Button(new Rect(7, 336, 185, 55), new GUIContent(),style))
