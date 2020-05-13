@@ -648,8 +648,8 @@ namespace EVMC4U
             }
         }
 
-        //モデルを読み込む
-        private void LoadVRM(string path)
+        //モデル破棄
+        public void DestroyModel()
         {
             //存在すれば即破壊(異常顔防止)
             if (Model != null)
@@ -657,37 +657,52 @@ namespace EVMC4U
                 Destroy(Model);
                 Model = null;
             }
-            if (LoadedModelParent != null) {
+            if (LoadedModelParent != null)
+            {
                 Destroy(LoadedModelParent);
                 LoadedModelParent = null;
             }
+        }
+
+        //ファイルからモデルを読み込む
+        public void LoadVRM(string path)
+        {
+            DestroyModel();
 
             //バイナリの読み込み
             if (File.Exists(path))
             {
                 byte[] VRMdata = File.ReadAllBytes(path);
-                //読み込み
-                VRMImporterContext vrmImporter = new VRMImporterContext();
-                vrmImporter.ParseGlb(VRMdata);
-
-                vrmImporter.LoadAsync(() =>
-                {
-                    Model = vrmImporter.Root;
-
-                    //ExternalReceiverの下にぶら下げる
-                    LoadedModelParent = new GameObject();
-                    LoadedModelParent.transform.SetParent(transform, false);
-                    LoadedModelParent.name = "LoadedModelParent";
-                    //その下にモデルをぶら下げる
-                    Model.transform.SetParent(LoadedModelParent.transform, false);
-
-                    vrmImporter.EnableUpdateWhenOffscreen();
-                    vrmImporter.ShowMeshes();
-                });
+                LoadVRMFromData(VRMdata);
             }
             else {
                 Debug.LogError("VRM load failed.");
             }
+        }
+
+        //ファイルからモデルを読み込む
+        public void LoadVRMFromData(byte[] VRMdata)
+        {
+            DestroyModel();
+
+            //読み込み
+            VRMImporterContext vrmImporter = new VRMImporterContext();
+            vrmImporter.ParseGlb(VRMdata);
+
+            vrmImporter.LoadAsync(() =>
+            {
+                Model = vrmImporter.Root;
+
+                //ExternalReceiverの下にぶら下げる
+                LoadedModelParent = new GameObject();
+                LoadedModelParent.transform.SetParent(transform, false);
+                LoadedModelParent.name = "LoadedModelParent";
+                //その下にモデルをぶら下げる
+                Model.transform.SetParent(LoadedModelParent.transform, false);
+
+                vrmImporter.EnableUpdateWhenOffscreen();
+                vrmImporter.ShowMeshes();
+            });
         }
 
         //ボーン位置をキャッシュテーブルに基づいて更新
