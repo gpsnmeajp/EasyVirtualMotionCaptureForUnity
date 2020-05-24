@@ -50,6 +50,9 @@ public class HiResolutionPhotoCamera : MonoBehaviour {
 	}
 
     void TakePhoto() {
+        width = 8192;
+        height = (int)((float)8192 * (float)Screen.height/ (float)Screen.width);
+
         //撮影したい解像度のRenderテクスチャを作成
         var renderTexture = new RenderTexture(width, height, 24);
         //アクティブなレンダーテクスチャを保存
