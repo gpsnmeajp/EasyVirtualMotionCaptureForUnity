@@ -37,7 +37,7 @@ namespace EVMC4U
         static GUIStyle style = new GUIStyle();
         static int page = 1;
         static AnimFloat anim = new AnimFloat(0.001f);
-        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 53;
+        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 57;
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()
