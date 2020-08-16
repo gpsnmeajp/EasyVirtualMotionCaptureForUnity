@@ -5,7 +5,8 @@
 UnityPackage1つで簡単導入、ランタイムでももちろん動作。プロトコルは[VirtualMotionCaptureProtocol](https://sh-akira.github.io/VirtualMotionCaptureProtocol/)に準拠。  
   
 あなたのしたい表現、使いたい機能、アセットを邪魔しません。  
-Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み  
+~~Unity5.6.3p1 〜 Unity2019.3(beta)まで動作確認済み(～v3.6)~~  
+Unity2018.4.23f1 〜 Unity2020.1.2.f1まで動作確認済み(v3.7～)~~  
 
 [VMC Protocol 対応](https://sh-akira.github.io/VirtualMotionCaptureProtocol/)  
 <img src="https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/blob/README-image/vmpc_logo_128x128.png?raw=true"></img>
@@ -26,7 +27,7 @@ https://sh-akira.github.io/VirtualMotionCapture/download.html
 MIT Licence  
 
 以下のライブラリに依存しています。  
-+ [UniVRM-0.53.0_6b07 - UniVRM, UniGLTF, UniHumanoid, MToon(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
++ [UniVRM-0.57.1_60a9 - UniVRM, UniGLTF, UniHumanoid, MToon(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
 + [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
 
 # 作者
