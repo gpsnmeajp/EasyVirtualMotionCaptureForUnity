@@ -29,19 +29,22 @@
 using System;
 using System.Reflection;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
 using VRM;
+using UniGLTF;
 
 namespace EVMC4U
 {
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.7")]
+        [Header("ExternalReceiver v3.8")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
         public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
@@ -152,8 +155,13 @@ namespace EVMC4U
         Vector3 scale;
         Vector3 offset;
 
+        //同期コンテキスト
+        SynchronizationContext synchronizationContext;
+
         public void Start()
         {
+            synchronizationContext = SynchronizationContext.Current;
+
             //nullチェック
             if (NextReceivers == null)
             {
@@ -663,14 +671,17 @@ namespace EVMC4U
             DestroyModel();
 
             //読み込み
-            VRMImporterContext vrmImporter = new VRMImporterContext();
-            vrmImporter.ParseGlb(VRMdata);
+            GlbLowLevelParser glbLowLevelParser = new GlbLowLevelParser(null, VRMdata);
+            GltfData gltfData = glbLowLevelParser.Parse();
+            VRMImporterContext vrmImporter = new VRMImporterContext(gltfData);
 
             isLoading = true;
-            vrmImporter.LoadAsync(() =>
-            {
+
+            synchronizationContext.Post(async (arg) => {
+                RuntimeGltfInstance instance = await vrmImporter.LoadAsync();
                 isLoading = false;
-                Model = vrmImporter.Root;
+
+                Model = instance.Root;
 
                 //ExternalReceiverの下にぶら下げる
                 LoadedModelParent = new GameObject();
@@ -679,13 +690,13 @@ namespace EVMC4U
                 //その下にモデルをぶら下げる
                 Model.transform.SetParent(LoadedModelParent.transform, false);
 
-                vrmImporter.EnableUpdateWhenOffscreen();
-                vrmImporter.ShowMeshes();
+                instance.EnableUpdateWhenOffscreen();
+                instance.ShowMeshes();
 
                 //カメラなどの移動補助のため、頭の位置を格納する
                 animator = Model.GetComponent<Animator>();
                 HeadPosition = animator.GetBoneTransform(HumanBodyBones.Head).position;
-            });
+            }, null);
         }
 
         //ボーン位置をキャッシュテーブルに基づいて更新
