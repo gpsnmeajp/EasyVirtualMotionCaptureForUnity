@@ -28,7 +28,7 @@ https://sh-akira.github.io/VirtualMotionCapture/download.html
 MIT Licence  
 
 以下のライブラリに依存しています。  
-+ [UniVRM-0.57.1_60a9 - UniVRM, UniGLTF, UniHumanoid, MToon(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
++ [UniVRM - UniVRM, UniGLTF, UniHumanoid, MToon(MIT Licence)](https://github.com/vrm-c/UniVRM/blob/master/LICENSE.txt)
 + [uOSC v0.0.2(MIT Licence)](https://github.com/hecomi/uOSC/blob/master/README.md)
 
 # 作者
