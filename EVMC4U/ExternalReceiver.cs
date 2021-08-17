@@ -692,6 +692,7 @@ namespace EVMC4U
 
                 instance.EnableUpdateWhenOffscreen();
                 instance.ShowMeshes();
+                vrmImporter.Dispose();
 
                 //カメラなどの移動補助のため、頭の位置を格納する
                 animator = Model.GetComponent<Animator>();
