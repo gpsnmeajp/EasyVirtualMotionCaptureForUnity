@@ -24,6 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#pragma warning disable CS0162
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
@@ -37,7 +38,7 @@ namespace EVMC4U
         static GUIStyle style = new GUIStyle();
         static int page = 1;
         static AnimFloat anim = new AnimFloat(0.001f);
-        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 80;
+        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()

@@ -44,7 +44,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.8")]
+        [Header("ExternalReceiver v3.9")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
         public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
@@ -673,12 +673,13 @@ namespace EVMC4U
             //読み込み
             GlbLowLevelParser glbLowLevelParser = new GlbLowLevelParser(null, VRMdata);
             GltfData gltfData = glbLowLevelParser.Parse();
-            VRMImporterContext vrmImporter = new VRMImporterContext(gltfData);
+            VRMData vrm = new VRMData(gltfData);
+            VRMImporterContext vrmImporter = new VRMImporterContext(vrm);
 
             isLoading = true;
 
             synchronizationContext.Post(async (arg) => {
-                RuntimeGltfInstance instance = await vrmImporter.LoadAsync();
+                RuntimeGltfInstance instance = await vrmImporter.LoadAsync(new VRMShaders.ImmediateCaller());
                 isLoading = false;
 
                 Model = instance.Root;
@@ -696,6 +697,10 @@ namespace EVMC4U
                 //カメラなどの移動補助のため、頭の位置を格納する
                 animator = Model.GetComponent<Animator>();
                 HeadPosition = animator.GetBoneTransform(HumanBodyBones.Head).position;
+
+                //開放
+                vrmImporter.Dispose();
+                gltfData.Dispose();
             }, null);
         }
 
