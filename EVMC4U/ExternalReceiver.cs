@@ -52,6 +52,7 @@ namespace EVMC4U
         [Header("Root Synchronize Option")]
         public Transform RootPositionTransform = null; //VR向けroot位置同期オブジェクト指定
         public Transform RootRotationTransform = null; //VR向けroot回転同期オブジェクト指定
+        public Transform RootScaleTransform = null; //VR向けroot回転同期オブジェクト指定
         public bool RootPositionSynchronize = true; //ルート座標同期(ルームスケール移動)
         public bool RootRotationSynchronize = true; //ルート回転同期
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
@@ -247,6 +248,12 @@ namespace EVMC4U
                 RootRotationTransform = Model.transform;
             }
 
+            //ルートスケールがない場合
+            if (RootScaleTransform == null && Model != null)
+            {
+                RootScaleTransform = Model.transform;
+            }
+
             //モデルがない場合はエラー表示をしておく(親切心)
             if (Model == null)
             {
@@ -389,6 +396,12 @@ namespace EVMC4U
                 RootRotationTransform = Model.transform;
             }
 
+            //ルートスケールがない場合
+            if (RootScaleTransform == null && Model != null)
+            {
+                RootScaleTransform = Model.transform;
+            }
+
             //モーションデータ送信可否
             if (message.address == "/VMC/Ext/OK"
                 && (message.values[0] is int))
@@ -487,12 +500,12 @@ namespace EVMC4U
                 //位置同期
                 if (RootPositionSynchronize)
                 {
-                    RootPositionTransform.localPosition = pos;
+                    RootPositionTransform.localPosition += pos;
                 }
                 //回転同期
                 if (RootRotationSynchronize)
                 {
-                    RootRotationTransform.localRotation = rot;
+                    RootRotationTransform.localRotation *= rot;
                 }
                 //スケール同期とオフセット補正(v2.1拡張プロトコルの場合のみ)
                 if (RootScaleOffsetSynchronize && message.values.Length > RootPacketLengthOfScaleAndOffset
@@ -504,9 +517,9 @@ namespace EVMC4U
                     && (message.values[13] is float)
                     )
                 {
-                    scale.x = 1.0f / (float)message.values[8];
-                    scale.y = 1.0f / (float)message.values[9];
-                    scale.z = 1.0f / (float)message.values[10];
+                    scale.x = RootScaleTransform.localScale.x / (float)message.values[8];
+                    scale.y = RootScaleTransform.localScale.y / (float)message.values[9];
+                    scale.z = RootScaleTransform.localScale.z / (float)message.values[10];
                     offset.x = (float)message.values[11];
                     offset.y = (float)message.values[12];
                     offset.z = (float)message.values[13];
@@ -522,7 +535,7 @@ namespace EVMC4U
                     }
                 }
                 else {
-                    Model.transform.localScale = Vector3.one;
+                    //Model.transform.localScale = Vector3.one;
                 }
             }
             //ボーン姿勢
