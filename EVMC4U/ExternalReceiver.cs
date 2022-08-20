@@ -36,7 +36,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
-using VRM;
+using UniVRM10;
 using UniGLTF;
 
 namespace EVMC4U
@@ -44,7 +44,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.9")]
+        [Header("ExternalReceiver v4.0alpha")]
         public GameObject Model = null;
         public bool Freeze = false; //すべての同期を止める(撮影向け)
         public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
@@ -119,8 +119,8 @@ namespace EVMC4U
 
         //ボーン情報取得
         Animator animator = null;
-        //VRMのブレンドシェーププロキシ
-        VRMBlendShapeProxy blendShapeProxy = null;
+        //VRM10のルート
+        Vrm10Instance VrmRoot = null;
 
         //ボーンENUM情報テーブル
         Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
@@ -130,8 +130,8 @@ namespace EVMC4U
         Dictionary<HumanBodyBones, Quaternion> HumanBodyBonesRotationTable = new Dictionary<HumanBodyBones, Quaternion>();
 
         //ブレンドシェープ変換テーブル
-        Dictionary<string, BlendShapeKey> StringToBlendShapeKeyDictionary = new Dictionary<string, BlendShapeKey>();
-        Dictionary<BlendShapeKey, float> BlendShapeToValueDictionary = new Dictionary<BlendShapeKey, float>();
+        Dictionary<string, ExpressionKey> StringToBlendShapeKeyDictionary = new Dictionary<string, ExpressionKey>();
+        Dictionary<ExpressionKey, float> BlendShapeToValueDictionary = new Dictionary<ExpressionKey, float>();
 
 
         //uOSCサーバー
@@ -227,10 +227,10 @@ namespace EVMC4U
             //5.6.3p1などRunInBackgroundが既定で無効な場合Unityが極めて重くなるため対処
             Application.runInBackground = true;
 
-            //VRMモデルからBlendShapeProxyを取得(タイミングの問題)
-            if (blendShapeProxy == null && Model != null)
+            //VRMモデルからVrmRootを取得(タイミングの問題)
+            if (VrmRoot == null && Model != null)
             {
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                VrmRoot = Model.GetComponent<Vrm10Instance>();
             }
 
             //ルート位置がない場合
@@ -258,7 +258,7 @@ namespace EVMC4U
             if (OldModel != Model && Model != null)
             {
                 animator = Model.GetComponent<Animator>();
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                VrmRoot = Model.GetComponent<Vrm10Instance>();
                 OldModel = Model;
 
                 Debug.Log("[ExternalReceiver] New model detected");
@@ -273,13 +273,13 @@ namespace EVMC4U
                 StringToBlendShapeKeyDictionary.Clear();
 
                 //全Clipsを取り出す
-                foreach (var c in blendShapeProxy.BlendShapeAvatar.Clips) {
+                foreach (var c in VrmRoot.Runtime.Expression.ExpressionKeys) {
                     string key = "";
                     bool unknown = false;
                     //プリセットかどうかを調べる
-                    if (c.Preset == BlendShapePreset.Unknown) {
+                    if (c.Preset == ExpressionPreset.custom) {
                         //非プリセット(Unknown)であれば、Unknown用の名前変数を参照する
-                        key = c.BlendShapeName;
+                        key = c.Name;
                         unknown = true;
                     }
                     else {
@@ -293,7 +293,7 @@ namespace EVMC4U
                     //Debug.Log("Add: [key]->" + key + " [lowerKey]->" + lowerKey + " [clip]->" + c.ToString() + " [bskey]->"+c.Key.ToString() + " [unknown]->"+ unknown);
 
                     //小文字名-BSKeyで登録する                    
-                    StringToBlendShapeKeyDictionary.Add(lowerKey, c.Key);
+                    StringToBlendShapeKeyDictionary.Add(lowerKey, c);
                 }
 
                 //メモ: プリセット同名の独自キー、独自キーのケース違いの重複は、共に区別しないと割り切る
@@ -597,7 +597,7 @@ namespace EVMC4U
                     }
                 }
 
-                if (BlendShapeSynchronize && blendShapeProxy != null)
+                if (BlendShapeSynchronize && VrmRoot != null)
                 {
                     //v0.56 BlendShape仕様変更対応
                     //辞書からKeyに変換し、Key値辞書に値を入れる
@@ -606,7 +606,7 @@ namespace EVMC4U
                     string lowerKey = key.ToLower();
 
                     //キーに該当するBSKeyが存在するかチェックする
-                    BlendShapeKey bskey;
+                    ExpressionKey bskey;
                     if (StringToBlendShapeKeyDictionary.TryGetValue(lowerKey, out bskey)){
                         //キーに対して値を登録する
                         BlendShapeToValueDictionary[bskey] = value;
@@ -614,17 +614,40 @@ namespace EVMC4U
                         //Debug.Log("[lowerKey]->"+ lowerKey+" [bskey]->"+bskey.ToString()+" [value]->"+value);
                     }
                     else {
-                        //そんなキーは無い
-                        //Debug.LogError("[lowerKey]->" + lowerKey + " is not found");
+                        //VRM0.x -> VRM1.x変換テーブル(互換性)
+                        switch (lowerKey)
+                        {
+                            case "joy": lowerKey = "happy"; break;
+                            case "sorrow": lowerKey = "sad"; break;
+                            case "fun": lowerKey = "relaxed"; break;
+                            case "a": lowerKey = "aa"; break;
+                            case "i": lowerKey = "ih"; break;
+                            case "u": lowerKey = "ou"; break;
+                            case "e": lowerKey = "ee"; break;
+                            case "o": lowerKey = "oh"; break;
+                            case "blink_l": lowerKey = "blinkleft"; break;
+                            case "blink_r": lowerKey = "blinkright"; break;
+                        }
+                        if (StringToBlendShapeKeyDictionary.TryGetValue(lowerKey, out bskey))
+                        {
+                            //キーに対して値を登録する
+                            BlendShapeToValueDictionary[bskey] = value;
+
+                            //Debug.Log("[lowerKey]->"+ lowerKey+" [bskey]->"+bskey.ToString()+" [value]->"+value);
+                        }
+                        else {
+                            //そんなキーは無い
+                            //Debug.LogError("[lowerKey]->" + lowerKey + " is not found");
+                        }
                     }
                 }
             }
             //ブレンドシェープ適用
             else if (message.address == "/VMC/Ext/Blend/Apply")
             {
-                if (BlendShapeSynchronize && blendShapeProxy != null)
+                if (BlendShapeSynchronize && VrmRoot != null)
                 {
-                    blendShapeProxy.SetValues(BlendShapeToValueDictionary);
+                    VrmRoot.Runtime.Expression.SetWeights(BlendShapeToValueDictionary);
                 }
             }
         }
@@ -673,14 +696,34 @@ namespace EVMC4U
             //読み込み
             GlbLowLevelParser glbLowLevelParser = new GlbLowLevelParser(null, VRMdata);
             GltfData gltfData = glbLowLevelParser.Parse();
-            VRMData vrm = new VRMData(gltfData);
-            VRMImporterContext vrmImporter = new VRMImporterContext(vrm);
+            Vrm10Data vrm = Vrm10Data.Parse(gltfData);
+            GltfData migratedGltfData = null;
+            
+            if (vrm == null) {
+                //自動マイグレーション
+                MigrationData mdata;
+                migratedGltfData = Vrm10Data.Migrate(gltfData, out vrm, out mdata);
+                Debug.Log(mdata.Message);
+                if (vrm == null)
+                {
+                    Debug.LogError("load failed");
+                    return;
+                }
+            }
+
+            Vrm10Importer vrmImporter = new Vrm10Importer(vrm);
 
             isLoading = true;
 
             synchronizationContext.Post(async (arg) => {
                 RuntimeGltfInstance instance = await vrmImporter.LoadAsync(new VRMShaders.ImmediateCaller());
                 isLoading = false;
+
+                if (migratedGltfData != null)
+                {
+                    migratedGltfData.Dispose();
+                }
+                gltfData.Dispose();
 
                 Model = instance.Root;
 

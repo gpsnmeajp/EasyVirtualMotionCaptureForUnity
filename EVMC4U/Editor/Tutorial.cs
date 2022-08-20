@@ -29,7 +29,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine.Events;
-using VRM;
+using UniVRM10;
 namespace EVMC4U
 {
     public class Tutorial : EditorWindow
@@ -38,7 +38,7 @@ namespace EVMC4U
         static GUIStyle style = new GUIStyle();
         static int page = 1;
         static AnimFloat anim = new AnimFloat(0.001f);
-        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
+        const bool check = VRMVersion.MAJOR != 1 || VRMVersion.MINOR != 0;
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()
