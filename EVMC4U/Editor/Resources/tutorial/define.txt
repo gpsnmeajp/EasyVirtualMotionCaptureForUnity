@@ -1,0 +1,22 @@
+{
+	"debug": "true",
+	"pages": [
+		{
+			"name":"start",
+			"text":"",
+			"image":"start/start_bg",
+			"buttons":[
+				{"x":"20", "y":"195", "w":"358", "image":"start/start_japanese","uri":"page://"},
+				{"x":"20", "y":"286", "w":"358", "image":"start/start_english","uri":"page://"}
+			]
+		},
+		{
+			"name":"versionCheckFailed",
+			"text":"",
+			"image":"versionCheckFailed/bg",
+			"buttons":[
+				{"x":"20", "y":"195", "w":"358", "image":"versionCheckFailed/gotoStart","uri":"page://start"}
+			]
+		}
+	]
+}
