@@ -1,5 +1,5 @@
 {
-	"debug": "true",
+	"debug": "false",
 	"pages": [
 		{
 			"name":"start",

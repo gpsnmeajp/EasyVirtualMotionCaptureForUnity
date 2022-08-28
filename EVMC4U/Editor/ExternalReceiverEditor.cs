@@ -36,7 +36,7 @@ namespace EVMC4U
     {
         public override void OnInspectorGUI()
         {
-            if (GUILayout.Button("チュートリアル・説明書を開く"))
+            if (GUILayout.Button("Open Manual / 説明書を開く"))
             {
                 Tutorial.Open();
             }
