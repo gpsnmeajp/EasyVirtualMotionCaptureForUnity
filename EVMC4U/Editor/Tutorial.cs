@@ -112,9 +112,6 @@ namespace EVMC4U
         [MenuItem("EVMC4U/Oepn Tutorial")]
         public static void Open()
         {
-            //一度開いたのを覚えておく
-            EditorUserSettings.SetConfigValue("Opened", "1");
-
             //ウィンドウサイズを固定
             var window = GetWindow<Tutorial>();
             window.maxSize = new Vector2(window_w, window_h - 6);
@@ -125,6 +122,12 @@ namespace EVMC4U
             anim.speed = 10f;
             anim.target = 0.001f;
             anim.valueChanged = null;
+
+            if (Resources.Load<TextAsset>("tutorial/define") == null)
+            {
+                //読み込み準備ができていない
+                return;
+            }
 
             //ページを初期位置に設定
             page = "start";
@@ -144,26 +147,30 @@ namespace EVMC4U
             try
             {
                 jsonError = "";
-                tutorialJson = JsonUtility.FromJson<TutorialJson>(Resources.Load<TextAsset>("tutorial/define").text);
+                var r = Resources.Load<TextAsset>("tutorial/define");
+                tutorialJson = JsonUtility.FromJson<TutorialJson>(r.text);
                 if (tutorialJson.debug)
                 {
                     Debug.Log(tutorialJson);
                 }
+
+                //各ページのデータを読み込む
+                foreach (var p in tutorialJson.pages)
+                {
+                    tutorialPages.Add(p.name, p);
+                    if (tutorialJson.debug)
+                    {
+                        Debug.Log(p);
+                    }
+                }
+
+                //一度開いたのを覚えておく
+                EditorUserSettings.SetConfigValue("Opened", "1");
             }
             catch (ArgumentException e) {
-                Debug.LogError(e);
+                //Debug.LogError(e);
                 jsonError = e.ToString();
                 tutorialJson = null;
-            }
-
-            //各ページのデータを読み込む
-            foreach (var p in tutorialJson.pages)
-            {
-                tutorialPages.Add(p.name, p);
-                if (tutorialJson.debug)
-                {
-                    Debug.Log(p);
-                }
             }
 
             //バージョンチェック(失敗したら失敗ページに飛ばす)
