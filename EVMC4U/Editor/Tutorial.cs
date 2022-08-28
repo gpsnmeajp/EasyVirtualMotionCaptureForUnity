@@ -4,7 +4,7 @@
  *
  * MIT License
  * 
- * Copyright (c) 2020 gpsnmeajp
+ * Copyright (c) 2020-2022 gpsnmeajp
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@
  * SOFTWARE.
  */
 #pragma warning disable CS0162
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
@@ -34,15 +38,71 @@ namespace EVMC4U
 {
     public class Tutorial : EditorWindow
     {
-        static Texture2D texture;
-        static GUIStyle style = new GUIStyle();
-        static int page = 1;
+        //ページ名
+        static string page = "";
+
+        //ボタン押下アニメーション
         static AnimFloat anim = new AnimFloat(0.001f);
+        static string animTargetName = ""; //1つのボタンだけアニメさせる識別名
+
+        static string jsonError = "";
+
+        const int window_w = 400;
+        const int window_h = 400;
         const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
+
+        static TutorialJson tutorialJson = null;
+        static Dictionary<string, TutorialPage> tutorialPages = new Dictionary<string, TutorialPage>();
+
+        //JSON設定ファイル定義
+        [Serializable]
+        private class TutorialJson
+        {
+            public bool debug;
+            public TutorialPage[] pages;
+            public override string ToString() {
+                return "TutorialJson debug:" + debug + " pages:" + pages.Length;
+            }
+        }
+
+        //JSONページ定義
+        [Serializable]
+        private class TutorialPage
+        {
+            public string name = "";
+            public string text = "";
+            public string image = "";
+            public TutorialButton[] buttons = new TutorialButton[0];
+
+            public override string ToString()
+            {
+                return "TutorialPage name:" + name + " text:" + text + " iamge:" + image + " buttons:" + buttons.Length;
+            }
+        }
+
+        //JSONボタン定義
+        [Serializable]
+        private class TutorialButton
+        {
+            public int x = 0;
+            public int y = 0;
+            public int w = 0;
+            public int h = 0;
+
+            public string text = "";
+
+            public string image = "";
+            public string uri = ""; //"page://" = page, "http://" or "https://" = url
+            public override string ToString()
+            {
+                return "TutorialButton (" + x + "," + y + "," + w + "," + h + ") text:" + text + " image:" + image + " uri:" + uri;
+            }
+        }
 
         [InitializeOnLoadMethod]
         static void InitializeOnLoad()
         {
+            //一度も開いたことない場合は、ここで開く
             if (EditorUserSettings.GetConfigValue("Opened") != "1" || (check && EditorUserSettings.GetConfigValue("VRMCheckCaution") != "1")) {
                 Open();
             }
@@ -51,24 +111,56 @@ namespace EVMC4U
         [MenuItem("EVMC4U/チュートリアル")]
         public static void Open()
         {
+            //一度開いたのを覚えておく
             EditorUserSettings.SetConfigValue("Opened", "1");
 
+            //ウィンドウサイズを固定
             var window = GetWindow<Tutorial>();
-            window.maxSize = new Vector2(400, 400);
+            window.maxSize = new Vector2(window_w, window_h);
             window.minSize = window.maxSize;
 
+            //アニメーション定義
             anim.value = 0.001f;
             anim.speed = 10f;
             anim.target = 0.001f;
             anim.valueChanged = null;
-            page = 1;
-            texture = null;
 
-            //バージョンチェック
+            //ページを初期位置に設定
+            page = "start";
+
+            //データを読み込む
+            tutorialPages = new Dictionary<string, TutorialPage>();
+
+            try
+            {
+                jsonError = "";
+                tutorialJson = JsonUtility.FromJson<TutorialJson>(Resources.Load<TextAsset>("tutorial/define").text);
+                if (tutorialJson.debug)
+                {
+                    Debug.Log(tutorialJson);
+                }
+            }
+            catch (ArgumentException e) {
+                Debug.LogError(e);
+                jsonError = e.ToString();
+                tutorialJson = null;
+            }
+
+            //各ページのデータを読み込む
+            foreach (var p in tutorialJson.pages)
+            {
+                tutorialPages.Add(p.name, p);
+                if (tutorialJson.debug)
+                {
+                    Debug.Log(p);
+                }
+            }
+
+            //バージョンチェック(失敗したら失敗ページに飛ばす)
             if (check)
             {
                 EditorUserSettings.SetConfigValue("VRMCheckCaution", "1");
-                page = 0;
+                page = "versionCheckFailed";
             }
             else {
                 EditorUserSettings.SetConfigValue("VRMCheckCaution", "0");
@@ -77,108 +169,122 @@ namespace EVMC4U
 
         void OnGUI()
         {
+            //ページを開いたまま初期化されたら、初期ロード処理に飛ばす
+            if (page == "") {
+                GUI.Label(new Rect(10, 10, window_w, window_h), "INVALID STATE\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+                Open();
+                return;
+            }
+
+            //アニメーションを立ち上げる
             if (anim.valueChanged == null) {
                 var repaintEvent = new UnityEvent();
                 repaintEvent.AddListener(() => Repaint());
                 anim.valueChanged = repaintEvent;
             }
+
+            //アニメーション折り返し
             if (anim.value > anim.target-0.1f) {
                 anim.target = 0.001f;
             }
 
-            //背景描画
-            if (texture == null)
-            {
-                if (page == 0)
+            //ページの表示処理を開始
+            TutorialPage tutorialPage;
+            if (!tutorialPages.TryGetValue(page, out tutorialPage)) {
+                //JSONが多分バグってるときに表示
+                GUI.Label(new Rect(10, 10, window_w - 20, window_h), "JSON LOAD FAILED\n"+ jsonError + "\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+                if (GUI.Button(new Rect(0, window_h - 30, window_w, 30), "Reload"))
                 {
-                    loadSlide(page);
+                    Open();
                 }
-                else {
-                    loadSlide(1);
-                }
-            }
-            if (texture == null)
-            {
-                GUI.Label(new Rect(10, 10, 300, 300), "チュートリアルの読み込みに失敗しました。\nアセットが移動されている可能性があります。\nUnityPackageの導入からやり直してみてください");
                 return;
             }
-            else {
-                EditorGUI.DrawPreviewTexture(new Rect(0,0, 400, 400), texture);
-                EditorGUI.DrawPreviewTexture(new Rect(anim.value, anim.value, 400 - anim.value*2, 400 - anim.value * 2), texture);
+
+            //デバッグログ
+            if (tutorialJson.debug)
+            {
+                Debug.Log("OnGUI: " + anim.value);
+                Debug.Log(tutorialPage);
             }
 
-            //GUI制御
-            switch (page) {
-                case 0:
-                    agreeButtons();
-                    break;
-                case 1:
-                    toppageButtons();
-                    break;
-                case 3:
-                    urlButton("https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/%E8%AA%AC%E6%98%8E%E5%8B%95%E7%94%BB");
-                    slideButtons();
-                    break;
-                case 4:
-                    urlButton("https://sh-akira.github.io/VirtualMotionCapture/");
-                    slideButtons();
-                    break;
-                case 7:
-                    urlButton("https://sh-akira.github.io/VirtualMotionCapture/");
-                    slideButtons();
-                    break;
-                default:
-                    slideButtons();
-                    break;
+            //背景画像があれば表示
+            if (tutorialPage.image != "")
+            {
+                var bgtexture = Resources.Load<Texture>("tutorial/" + tutorialPage.image);
+                EditorGUI.DrawPreviewTexture(new Rect(0, 0, window_w, window_h), bgtexture);
             }
-        }
 
-        void loadSlide(int p) {
-            page = p;
-            texture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/EVMC4U/manual/スライド" + p+".png");
-            anim.target = 2f;
-        }
-        void urlButton(string url) {
-            if (GUI.Button(new Rect(5, 8, 388, 320), new GUIContent(), style))
-            {
-                System.Diagnostics.Process.Start(url);
-                anim.target = 5f;
+            //ページのテキストを表示(代替テキスト)
+            GUI.Label(new Rect(0, 0, window_w, window_h), tutorialPage.text);
+
+            //ボタンを1つずつ表示
+            foreach (var b in tutorialPage.buttons) {
+                if (tutorialJson.debug)
+                {
+                    Debug.Log(b);
+                }
+
+                //ボタンに画像があればそれを表示
+                if (b.image != "") {
+                    //画像を読み込む
+                    var texture = Resources.Load<Texture>("tutorial/" + b.image);
+
+                    string buttonName = "btn" + b.x + "-" + b.y + "-" + b.w + "-" + b.h;
+                    float heigh = b.w * texture.height / texture.width;
+
+                    Rect r = new Rect(b.x, b.y, b.w, heigh);
+
+                    //アニメ対象の場合だけ動く
+                    if (buttonName == animTargetName)
+                    {
+                        r = new Rect(b.x + anim.value, b.y + anim.value, b.w, heigh);
+                    }
+
+                    //ボタンを表示
+                    if (GUI.Button(r, texture, new GUIStyle()))
+                    {
+                        //アニメーション処理と、遷移を実行
+                        buttonProcess(b.uri);
+                        animTargetName = buttonName;
+                        anim.target = 2f;
+                    }
+                }
+                else {
+                    //テキストボタンを表示
+                    if (GUI.Button(new Rect(b.x, b.y, b.w, b.h), b.text)) {
+                        buttonProcess(b.uri);
+                    }
+                }
             }
-        }
-        void agreeButtons()
-        {
-            if (GUI.Button(new Rect(7, 336, 185+ 194, 55), new GUIContent(), style))
+
+            //デバッグ再読み込みボタン
+            if (tutorialJson.debug)
             {
-                loadSlide(page + 1);
-            }
-        }
-        void slideButtons()
-        {
-            if (GUI.Button(new Rect(7, 336, 185, 55), new GUIContent(),style))
-            {
-                loadSlide(page - 1);
-            }
-            if (GUI.Button(new Rect(200, 336, 194, 55), new GUIContent(),style))
-            {
-                loadSlide(page + 1);
-            }
-        }
-        void toppageButtons() {
-            if (GUI.Button(new Rect(25, 180, 365, 55), new GUIContent(), style))
-            {
-                loadSlide(page + 1);
-            }
-            if (GUI.Button(new Rect(25, 180 + 65, 365, 55), new GUIContent(), style))
-            {
-                System.Diagnostics.Process.Start("https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki");
-                anim.target = 5f;
-            }
-            if (GUI.Button(new Rect(25, 180 + 65 * 2, 365, 55), new GUIContent(), style))
-            {
-                System.Diagnostics.Process.Start("https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Discord");
-                anim.target = 5f;
+                if (GUI.Button(new Rect(0,window_h-30,30,30),"#"))
+                {
+                    Open();
+                }
             }
         }
 
+        void buttonProcess(string uri) {
+            if (tutorialJson.debug)
+            {
+                Debug.LogWarning("buttonProcess: " + uri);
+            }
+
+            if (uri == null)
+            {
+                return;
+            }
+            if (uri.StartsWith("page://"))
+            {
+                page = uri.Replace("page://", "");
+            }
+            if (uri.StartsWith("http://") || uri.StartsWith("https://"))
+            {
+                System.Diagnostics.Process.Start(uri);
+            }
+        }
     }
 }
