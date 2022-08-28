@@ -38,6 +38,10 @@ namespace EVMC4U
 {
     public class Tutorial : EditorWindow
     {
+        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
+        const int window_w = 400;
+        const int window_h = 400;
+
         //ページ名
         static string page = "";
 
@@ -46,10 +50,6 @@ namespace EVMC4U
         static string animTargetName = ""; //1つのボタンだけアニメさせる識別名
 
         static string jsonError = "";
-
-        const int window_w = 400;
-        const int window_h = 400;
-        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
 
         static TutorialJson tutorialJson = null;
         static Dictionary<string, TutorialPage> tutorialPages = new Dictionary<string, TutorialPage>();
@@ -93,6 +93,7 @@ namespace EVMC4U
 
             public string image = "";
             public string uri = ""; //"page://" = page, "http://" or "https://" = url
+            public string fire = ""; //event
             public override string ToString()
             {
                 return "TutorialButton (" + x + "," + y + "," + w + "," + h + ") text:" + text + " image:" + image + " uri:" + uri;
@@ -108,7 +109,7 @@ namespace EVMC4U
             }
         }
 
-        [MenuItem("EVMC4U/チュートリアル")]
+        [MenuItem("EVMC4U/Oepn Tutorial")]
         public static void Open()
         {
             //一度開いたのを覚えておく
@@ -116,7 +117,7 @@ namespace EVMC4U
 
             //ウィンドウサイズを固定
             var window = GetWindow<Tutorial>();
-            window.maxSize = new Vector2(window_w, window_h);
+            window.maxSize = new Vector2(window_w, window_h - 6);
             window.minSize = window.maxSize;
 
             //アニメーション定義
@@ -127,6 +128,15 @@ namespace EVMC4U
 
             //ページを初期位置に設定
             page = "start";
+            if (EditorUserSettings.GetConfigValue("Language") == "ja")
+            {
+                page = "start_ja";
+            }
+            if (EditorUserSettings.GetConfigValue("Language") == "en")
+            {
+                page = "start_en";
+            }
+
 
             //データを読み込む
             tutorialPages = new Dictionary<string, TutorialPage>();
@@ -165,6 +175,13 @@ namespace EVMC4U
             else {
                 EditorUserSettings.SetConfigValue("VRMCheckCaution", "0");
             }
+        }
+
+        [MenuItem("EVMC4U/Reset Language")]
+        public static void ResetLanguage()
+        {
+            EditorUserSettings.SetConfigValue("Language", "");
+            Open();
         }
 
         void OnGUI()
@@ -229,22 +246,30 @@ namespace EVMC4U
                     //画像を読み込む
                     var texture = Resources.Load<Texture>("tutorial/" + b.image);
 
-                    string buttonName = "btn" + b.x + "-" + b.y + "-" + b.w + "-" + b.h;
-                    float heigh = b.w * texture.height / texture.width;
+                    //位置情報がない場合、下端として扱う
+                    if (b.x == 0 && b.y == 0 && b.w == 0 && b.h == 0)
+                    {
+                        b.y = window_h - window_w * texture.height / texture.width;
+                        b.w = window_w;
+                    }
 
-                    Rect r = new Rect(b.x, b.y, b.w, heigh);
+                    string buttonName = "btn#" + page + "#" +b.x + "-" + b.y + "-" + b.w + "-" + b.h;
+                    float height = b.w * texture.height / texture.width;
+
+                    Rect r = new Rect(b.x, b.y, b.w, height);
 
                     //アニメ対象の場合だけ動く
                     if (buttonName == animTargetName)
                     {
-                        r = new Rect(b.x + anim.value, b.y + anim.value, b.w, heigh);
+                        r = new Rect(b.x + anim.value, b.y + anim.value, b.w, height);
                     }
 
                     //ボタンを表示
                     if (GUI.Button(r, texture, new GUIStyle()))
                     {
                         //アニメーション処理と、遷移を実行
-                        buttonProcess(b.uri);
+                        buttonFireProcess(b.fire);
+                        buttonUriProcess(b.uri);
                         animTargetName = buttonName;
                         anim.target = 2f;
                     }
@@ -252,7 +277,8 @@ namespace EVMC4U
                 else {
                     //テキストボタンを表示
                     if (GUI.Button(new Rect(b.x, b.y, b.w, b.h), b.text)) {
-                        buttonProcess(b.uri);
+                        buttonFireProcess(b.fire);
+                        buttonUriProcess(b.uri);
                     }
                 }
             }
@@ -267,7 +293,7 @@ namespace EVMC4U
             }
         }
 
-        void buttonProcess(string uri) {
+        void buttonUriProcess(string uri) {
             if (tutorialJson.debug)
             {
                 Debug.LogWarning("buttonProcess: " + uri);
@@ -284,6 +310,14 @@ namespace EVMC4U
             if (uri.StartsWith("http://") || uri.StartsWith("https://"))
             {
                 System.Diagnostics.Process.Start(uri);
+            }
+        }
+
+        void buttonFireProcess(string fire) {
+            switch (fire) {
+                case "SaveLanguageJa": EditorUserSettings.SetConfigValue("Language", "ja"); break;
+                case "SaveLanguageEn": EditorUserSettings.SetConfigValue("Language", "en"); break;
+                default: break;
             }
         }
     }
