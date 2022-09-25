@@ -1,0 +1,55 @@
+{
+	"debug": "false",
+	"pages": [
+		{
+			"name":"start",
+			"image":"start/start_bg",
+			"buttons":[
+				{"x":"20", "y":"195", "w":"358", "image":"start/start_japanese","uri":"page://start_first_ja","fire": "SaveLanguageJa"},
+				{"x":"20", "y":"286", "w":"358", "image":"start/start_english","uri":"page://start_first_en","fire": "SaveLanguageEn"}
+			]
+		},
+		{
+			"name":"start_first_ja",
+			"image":"start_first/ja",
+			"buttons":[
+				{"image":"ok_button","uri":"page://start_ja"}
+			]
+		},
+		{
+			"name":"start_first_en",
+			"image":"start_first/en",
+			"buttons":[
+				{"image":"ok_button","uri":"page://start_en"}
+			]
+		},
+		{
+			"name":"start_ja",
+			"text":"",
+			"image":"start/start_bg",
+			"buttons":[
+				{"x":"20", "y":"195", "w":"358", "image":"start_ja/howtouse","uri":"https://gpsnmeajp.github.io/EasyVirtualMotionCaptureForUnity-documents/HowToUse/Japanese/"},
+				{"x":"20", "y":"254", "w":"358", "image":"start_ja/vmcprotocol","uri":"https://protocol.vmc.info/"},
+				{"x":"20", "y":"314", "w":"358", "image":"start_ja/discord","uri":"https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Discord"}
+			]
+		},
+		{
+			"name":"start_en",
+			"text":"",
+			"image":"start/start_bg",
+			"buttons":[
+				{"x":"20", "y":"195", "w":"358", "image":"start_en/howtouse","uri":"https://gpsnmeajp.github.io/EasyVirtualMotionCaptureForUnity-documents/HowToUse/English/"},
+				{"x":"20", "y":"254", "w":"358", "image":"start_en/vmcprotocol","uri":"https://protocol.vmc.info/english"},
+				{"x":"20", "y":"314", "w":"358", "image":"start_en/discord","uri":"https://github.com/gpsnmeajp/EasyVirtualMotionCaptureForUnity/wiki/Discord"}
+			]
+		},
+		{
+			"name":"versionCheckFailed",
+			"text":"",
+			"image":"caution_bg",
+			"buttons":[
+				{"image":"ignore","uri":"page://start"}
+			]
+		}
+	]
+}
