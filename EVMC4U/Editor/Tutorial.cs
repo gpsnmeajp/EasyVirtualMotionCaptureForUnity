@@ -202,7 +202,7 @@ namespace EVMC4U
             //ページを開いたまま初期化されたら、初期ロード処理に飛ばす
             if (page == "")
             {
-                GUI.Label(new Rect(10, 10, window_w, window_h), "INVALID STATE\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+                GUI.Label(new Rect(10, 10, window_w, window_h), "INVALID STATE\n\nチュートリアルの読み込みに失敗しました。Unityを再起動してください。\nそれでもダメな場合は、UnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease restart Unity.\nor Please re-import UnityPackage.");
                 Open();
                 return;
             }
@@ -226,7 +226,7 @@ namespace EVMC4U
             if (!tutorialPages.TryGetValue(page, out tutorialPage))
             {
                 //JSONが多分バグってるときに表示
-                GUI.Label(new Rect(10, 10, window_w - 20, window_h), "JSON LOAD FAILED\n" + jsonError + "\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+                GUI.Label(new Rect(10, 10, window_w - 20, window_h), "JSON LOAD FAILED\n" + jsonError + "\n\nチュートリアルの読み込みに失敗しました。Unityを再起動してください。\nそれでもダメな場合は、UnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease restart Unity.\nor Please re-import UnityPackage.");
                 if (GUI.Button(new Rect(0, window_h - 30, window_w, 30), "Reload"))
                 {
                     Open();

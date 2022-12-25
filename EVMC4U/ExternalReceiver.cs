@@ -44,7 +44,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v3.9")]
+        [Header("ExternalReceiver v4.0")]
         [SerializeField, Label("VRMモデルのGameObject")]
         public GameObject Model = null;
         [SerializeField, Label("一時停止")]
