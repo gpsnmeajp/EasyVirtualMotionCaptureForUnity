@@ -77,6 +77,8 @@ namespace EVMC4U
         [Header("Other Option")]
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
+        public Action<GameObject> BeforeModelDestroyAction = null; //破壊時Action
+        public Action<GameObject> AfterAutoLoadAction = null; //自動ロード時Action
 
         [Header("Status (Read only)")]
         [SerializeField]
@@ -95,7 +97,80 @@ namespace EVMC4U
         [Header("Daisy Chain")]
         public GameObject[] NextReceivers = new GameObject[6]; //デイジーチェーン
 
-        
+        [Header("Cut bones")]
+        public bool CutBonesEnable = false;
+
+        [Header("Cut bones(Head)")]
+        public bool CutBoneNeck = false;
+        public bool CutBoneHead = false;
+        public bool CutBoneLeftEye = false;
+        public bool CutBoneRightEye = false;
+        public bool CutBoneJaw = false;
+
+        [Header("Cut bones(Body)")]
+        public bool CutBoneHips = true;
+        public bool CutBoneSpine = true;
+        public bool CutBoneChest = true;
+        public bool CutBoneUpperChest = true;
+
+        [Header("Cut bones(Left Arm)")]
+        public bool CutBoneLeftShoulder = false;
+        public bool CutBoneLeftUpperArm = false;
+        public bool CutBoneLeftLowerArm = false;
+        public bool CutBoneLeftHand = false;
+
+        [Header("Cut bones(Right Arm)")]
+        public bool CutBoneRightShoulder = false;
+        public bool CutBoneRightUpperArm = false;
+        public bool CutBoneRightLowerArm = false;
+        public bool CutBoneRightHand = false;
+
+        [Header("Cut bones(Left Leg)")]
+        public bool CutBoneLeftUpperLeg = true;
+        public bool CutBoneLeftLowerLeg = true;
+        public bool CutBoneLeftFoot = true;
+        public bool CutBoneLeftToes = true;
+
+        [Header("Cut bones(Right Leg)")]
+        public bool CutBoneRightUpperLeg = true;
+        public bool CutBoneRightLowerLeg = true;
+        public bool CutBoneRightFoot = true;
+        public bool CutBoneRightToes = true;
+
+        [Header("Cut bones(Left Hand)")]
+        public bool CutBoneLeftThumbProximal = false;
+        public bool CutBoneLeftThumbIntermediate = false;
+        public bool CutBoneLeftThumbDistal = false;
+        public bool CutBoneLeftIndexProximal = false;
+        public bool CutBoneLeftIndexIntermediate = false;
+        public bool CutBoneLeftIndexDistal = false;
+        public bool CutBoneLeftMiddleProximal = false;
+        public bool CutBoneLeftMiddleIntermediate = false;
+        public bool CutBoneLeftMiddleDistal = false;
+        public bool CutBoneLeftRingProximal = false;
+        public bool CutBoneLeftRingIntermediate = false;
+        public bool CutBoneLeftRingDistal = false;
+        public bool CutBoneLeftLittleProximal = false;
+        public bool CutBoneLeftLittleIntermediate = false;
+        public bool CutBoneLeftLittleDistal = false;
+
+        [Header("Cut bones(Right Hand)")]
+        public bool CutBoneRightThumbProximal = false;
+        public bool CutBoneRightThumbIntermediate = false;
+        public bool CutBoneRightThumbDistal = false;
+        public bool CutBoneRightIndexProximal = false;
+        public bool CutBoneRightIndexIntermediate = false;
+        public bool CutBoneRightIndexDistal = false;
+        public bool CutBoneRightMiddleProximal = false;
+        public bool CutBoneRightMiddleIntermediate = false;
+        public bool CutBoneRightMiddleDistal = false;
+        public bool CutBoneRightRingProximal = false;
+        public bool CutBoneRightRingIntermediate = false;
+        public bool CutBoneRightRingDistal = false;
+        public bool CutBoneRightLittleProximal = false;
+        public bool CutBoneRightLittleIntermediate = false;
+        public bool CutBoneRightLittleDistal = false;
+
         //---Const---
 
         //rootパケット長定数(拡張判別)
@@ -635,6 +710,7 @@ namespace EVMC4U
             //存在すれば即破壊(異常顔防止)
             if (Model != null)
             {
+                BeforeModelDestroyAction?.Invoke(Model);
                 Destroy(Model);
                 Model = null;
             }
@@ -701,6 +777,9 @@ namespace EVMC4U
                 //開放
                 vrmImporter.Dispose();
                 gltfData.Dispose();
+
+                //読み込み後アクションを実行
+                AfterAutoLoadAction?.Invoke(Model);
             }, null);
         }
 
@@ -728,6 +807,66 @@ namespace EVMC4U
                 var t = animator.GetBoneTransform(bone);
                 if (t != null)
                 {
+                    //個別ボーン遮断
+                    if (CutBonesEnable)
+                    {
+                        if (bone == HumanBodyBones.Hips && CutBoneHips) { return; }
+                        if (bone == HumanBodyBones.LeftUpperLeg && CutBoneLeftUpperLeg) { return; }
+                        if (bone == HumanBodyBones.RightUpperLeg && CutBoneRightUpperLeg) { return; }
+                        if (bone == HumanBodyBones.LeftLowerLeg && CutBoneLeftLowerLeg) { return; }
+                        if (bone == HumanBodyBones.RightLowerLeg && CutBoneRightLowerLeg) { return; }
+                        if (bone == HumanBodyBones.LeftFoot && CutBoneLeftFoot) { return; }
+                        if (bone == HumanBodyBones.RightFoot && CutBoneRightFoot) { return; }
+                        if (bone == HumanBodyBones.Spine && CutBoneSpine) { return; }
+                        if (bone == HumanBodyBones.Chest && CutBoneChest) { return; }
+                        if (bone == HumanBodyBones.Neck && CutBoneNeck) { return; }
+                        if (bone == HumanBodyBones.Head && CutBoneHead) { return; }
+                        if (bone == HumanBodyBones.LeftShoulder && CutBoneLeftShoulder) { return; }
+                        if (bone == HumanBodyBones.RightShoulder && CutBoneRightShoulder) { return; }
+                        if (bone == HumanBodyBones.LeftUpperArm && CutBoneLeftUpperArm) { return; }
+                        if (bone == HumanBodyBones.RightUpperArm && CutBoneRightUpperArm) { return; }
+                        if (bone == HumanBodyBones.LeftLowerArm && CutBoneLeftLowerArm) { return; }
+                        if (bone == HumanBodyBones.RightLowerArm && CutBoneRightLowerArm) { return; }
+                        if (bone == HumanBodyBones.LeftHand && CutBoneLeftHand) { return; }
+                        if (bone == HumanBodyBones.RightHand && CutBoneRightHand) { return; }
+                        if (bone == HumanBodyBones.LeftToes && CutBoneLeftToes) { return; }
+                        if (bone == HumanBodyBones.RightToes && CutBoneRightToes) { return; }
+                        if (bone == HumanBodyBones.LeftEye && CutBoneLeftEye) { return; }
+                        if (bone == HumanBodyBones.RightEye && CutBoneRightEye) { return; }
+                        if (bone == HumanBodyBones.Jaw && CutBoneJaw) { return; }
+                        if (bone == HumanBodyBones.LeftThumbProximal && CutBoneLeftThumbProximal) { return; }
+                        if (bone == HumanBodyBones.LeftThumbIntermediate && CutBoneLeftThumbIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftThumbDistal && CutBoneLeftThumbDistal) { return; }
+                        if (bone == HumanBodyBones.LeftIndexProximal && CutBoneLeftIndexProximal) { return; }
+                        if (bone == HumanBodyBones.LeftIndexIntermediate && CutBoneLeftIndexIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftIndexDistal && CutBoneLeftIndexDistal) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleProximal && CutBoneLeftMiddleProximal) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleIntermediate && CutBoneLeftMiddleIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleDistal && CutBoneLeftMiddleDistal) { return; }
+                        if (bone == HumanBodyBones.LeftRingProximal && CutBoneLeftRingProximal) { return; }
+                        if (bone == HumanBodyBones.LeftRingIntermediate && CutBoneLeftRingIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftRingDistal && CutBoneLeftRingDistal) { return; }
+                        if (bone == HumanBodyBones.LeftLittleProximal && CutBoneLeftLittleProximal) { return; }
+                        if (bone == HumanBodyBones.LeftLittleIntermediate && CutBoneLeftLittleIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftLittleDistal && CutBoneLeftLittleDistal) { return; }
+                        if (bone == HumanBodyBones.RightThumbProximal && CutBoneRightThumbProximal) { return; }
+                        if (bone == HumanBodyBones.RightThumbIntermediate && CutBoneRightThumbIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightThumbDistal && CutBoneRightThumbDistal) { return; }
+                        if (bone == HumanBodyBones.RightIndexProximal && CutBoneRightIndexProximal) { return; }
+                        if (bone == HumanBodyBones.RightIndexIntermediate && CutBoneRightIndexIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightIndexDistal && CutBoneRightIndexDistal) { return; }
+                        if (bone == HumanBodyBones.RightMiddleProximal && CutBoneRightMiddleProximal) { return; }
+                        if (bone == HumanBodyBones.RightMiddleIntermediate && CutBoneRightMiddleIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightMiddleDistal && CutBoneRightMiddleDistal) { return; }
+                        if (bone == HumanBodyBones.RightRingProximal && CutBoneRightRingProximal) { return; }
+                        if (bone == HumanBodyBones.RightRingIntermediate && CutBoneRightRingIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightRingDistal && CutBoneRightRingDistal) { return; }
+                        if (bone == HumanBodyBones.RightLittleProximal && CutBoneRightLittleProximal) { return; }
+                        if (bone == HumanBodyBones.RightLittleIntermediate && CutBoneRightLittleIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightLittleDistal && CutBoneRightLittleDistal) { return; }
+                        if (bone == HumanBodyBones.UpperChest && CutBoneUpperChest) { return; }
+                    }
+
                     //指ボーン
                     if (bone == HumanBodyBones.LeftIndexDistal ||
                         bone == HumanBodyBones.LeftIndexIntermediate ||
