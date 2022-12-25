@@ -38,35 +38,69 @@ namespace EVMC4U
     public class CommunicationValidator : MonoBehaviour, IExternalReceiver
     {
         [Header("CommunicationValidator v1.2")]
-        [SerializeField]
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = "";  //Inspector表示用
 
+#if EVMC4U_JA
+        [Header("UI オプション")]
+#else
         [Header("UI Option")]
+#endif
+        [SerializeField, Label("画面上に表示する")]
         public bool ShowInformation = false;
 
-        [Header("Status Monitor")]
-        [SerializeField]
+#if EVMC4U_JA
+        [Header("状態モニタ(表示用)")]
+#else
+        [Header("Status Monitor(Read only)")]
+#endif
+        [SerializeField, Label("受信処理再帰呼出し回数")]
         private int CallCountMonitor = 0; //Inspector表示用
 
+        [SerializeField, Label("利用可能")]
         public int Available = 0;
+        [SerializeField, Label("送信側Time")]
         public float time = 0;
 
+        [SerializeField, Label("キャリブレーション状態")]
         public CalibrationState calibrationState = 0;
+        [SerializeField, Label("キャリブレーションモード")]
         public CalibrationMode calibrationMode = 0;
 
+#if EVMC4U_JA
+        [Header("送信側受信状態(表示用)")]
+#else
         [Header("Receive Status(Read only)")]
+#endif
+        [SerializeField, Label("受信許可")]
         public bool ReceiveEnable = false;
+        [SerializeField, Label("受信ポート")]
         public int ReceivePort = 0;
+        [SerializeField, Label("読み込み済み設定ファイルパス")]
         public string LoadedConfigPath = "";
+        [SerializeField, Label("背景色")]
         public Color backgroundColor = Color.clear;
+
+#if EVMC4U_JA
+        [Header("送信側ウィンドウ属性情報")]
+#else
         [Header("Window Attribute Info(Read only)")]
+#endif
+        [SerializeField, Label("最前面")]
         public bool IsTopMost = false;
+        [SerializeField, Label("透過")]
         public bool IsTransparent = false;
+        [SerializeField, Label("クリックスルー")]
         public bool WindowClickThrough = false;
+        [SerializeField, Label("枠なし")]
         public bool HideBorder = false;
 
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[1];
 
         private ExternalReceiverManager externalReceiverManager = null;

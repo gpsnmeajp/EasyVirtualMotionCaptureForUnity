@@ -38,11 +38,16 @@ namespace EVMC4U
     public class DirectionalLightReceiver : MonoBehaviour, IExternalReceiver
     {
         [Header("DirectionalLightReceiver v1.2")]
+        [SerializeField, Label("VMCディレクショナルライト制御同期Light")]
         public Light VMCControlledLight = null; //VMCディレクショナルライト制御同期
-        [SerializeField]
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = "";  //Inspector表示用
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[1];
 
         private ExternalReceiverManager externalReceiverManager = null;

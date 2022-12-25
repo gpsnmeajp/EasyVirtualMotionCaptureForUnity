@@ -30,6 +30,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace EVMC4U {
     //キーボード入力情報
     public struct KeyInput
@@ -85,6 +89,7 @@ namespace EVMC4U {
         Normal = 0,
         MR_Hand = 1,
         MR_Floor = 2,
+        T_Pose = 3,
     }
     public enum VirtualDevice
     {
@@ -92,4 +97,32 @@ namespace EVMC4U {
         Controller = 1,
         Tracker = 2,
     }
+#if UNITY_EDITOR
+    public class LabelAttribute : PropertyAttribute
+    {
+        public readonly string name;
+        public LabelAttribute(string name)
+        {
+            this.name = name;
+        }
+    }
+
+    [CustomPropertyDrawer(typeof(LabelAttribute))]
+    public class LabelAttributeDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+#if EVMC4U_JA
+            var attr = attribute as LabelAttribute;
+            label.text = attr.name;
+#endif
+            EditorGUI.PropertyField(position, property, label, true);
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            return base.GetPropertyHeight(property, label);
+        }
+    }
+#endif
 }
