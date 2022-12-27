@@ -97,7 +97,6 @@ namespace EVMC4U {
         Controller = 1,
         Tracker = 2,
     }
-#if UNITY_EDITOR
     public class LabelAttribute : PropertyAttribute
     {
         public readonly string name;
@@ -107,6 +106,7 @@ namespace EVMC4U {
         }
     }
 
+#if UNITY_EDITOR
     [CustomPropertyDrawer(typeof(LabelAttribute))]
     public class LabelAttributeDrawer : PropertyDrawer
     {
