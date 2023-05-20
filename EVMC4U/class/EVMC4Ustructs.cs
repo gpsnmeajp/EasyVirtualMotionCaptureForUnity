@@ -74,7 +74,7 @@ namespace EVMC4U {
     public struct MidiCCButton
     {
         public int knob;
-        public float active;
+        public int active;
     }
 
     public enum CalibrationState
