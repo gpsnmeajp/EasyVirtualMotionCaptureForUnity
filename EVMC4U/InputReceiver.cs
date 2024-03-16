@@ -38,22 +38,34 @@ namespace EVMC4U
     public class InputReceiver : MonoBehaviour, IExternalReceiver
     {
         [Header("InputReceiver v1.1")]
-        [SerializeField]
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = "";  //Inspector表示用
-        [SerializeField]
+        [SerializeField, Label("最終入力")]
         private string LastInput = "";
 
+#if EVMC4U_JA
+        [Header("入力イベント")]
+#else
         [Header("Event Callback")]
+#endif
         public KeyInputEvent KeyInputAction = new KeyInputEvent(); //キーボード入力イベント
         public ControllerInputEvent ControllerInputAction = new ControllerInputEvent(); //コントローラボタンイベント
         public MidiNoteInputEvent MidiNoteInputAction = new MidiNoteInputEvent();
         public MidiCCValueInputEvent MidiCCValueInputAction = new MidiCCValueInputEvent();
         public MidiCCButtonInputEvent MidiCCButtonInputAction = new MidiCCButtonInputEvent();
 
+#if EVMC4U_JA
+        [Header("MIDI CC モニタ(つまみ、ボタン)")]
+#else
         [Header("MIDI CC Monitor")]
+#endif
         public float[] CCValuesMonitor = new float[128];
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[1];
 
         //---

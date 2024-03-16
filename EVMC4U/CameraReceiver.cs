@@ -38,16 +38,28 @@ namespace EVMC4U
     public class CameraReceiver : MonoBehaviour, IExternalReceiver
     {
         [Header("CameraReceiver v1.1")]
+        [SerializeField, Label("VMCカメラ制御同期Camera")]
         public Camera VMCControlledCamera = null; //VMCカメラ制御同期
-        [SerializeField]
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = "";  //Inspector表示用
 
+#if EVMC4U_JA
+        [Header("カメラ手ブレ補正フィルタ")]
+#else
         [Header("Lowpass Filter Option")]
+#endif
+        [SerializeField, Label("カメラ位置フィルタ(手ブレ補正)")]
         public bool CameraPositionFilterEnable = false; //カメラ位置フィルタ(手ブレ補正)
+        [SerializeField, Label("カメラ回転フィルタ(手ブレ補正)")]
         public bool CameraRotationFilterEnable = false; //カメラ回転フィルタ(手ブレ補正)
+        [SerializeField, Label("カメラフィルタ係数")]
         public float CameraFilter = 0.95f; //カメラフィルタ係数
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[1];
 
         private ExternalReceiverManager externalReceiverManager = null;

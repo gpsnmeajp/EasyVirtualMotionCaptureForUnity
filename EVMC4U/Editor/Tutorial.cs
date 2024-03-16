@@ -34,6 +34,7 @@ using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine.Events;
 using UniVRM10;
+using System.Linq;
 namespace EVMC4U
 {
     public class Tutorial : EditorWindow
@@ -60,7 +61,8 @@ namespace EVMC4U
         {
             public bool debug;
             public TutorialPage[] pages;
-            public override string ToString() {
+            public override string ToString()
+            {
                 return "TutorialJson debug:" + debug + " pages:" + pages.Length;
             }
         }
@@ -104,7 +106,8 @@ namespace EVMC4U
         static void InitializeOnLoad()
         {
             //一度も開いたことない場合は、ここで開く
-            if (EditorUserSettings.GetConfigValue("Opened") != "1" || (check && EditorUserSettings.GetConfigValue("VRMCheckCaution") != "1")) {
+            if (EditorUserSettings.GetConfigValue("Opened") != "1" || (check && EditorUserSettings.GetConfigValue("VRMCheckCaution") != "1"))
+            {
                 Open();
             }
         }
@@ -167,7 +170,8 @@ namespace EVMC4U
                 //一度開いたのを覚えておく
                 EditorUserSettings.SetConfigValue("Opened", "1");
             }
-            catch (ArgumentException e) {
+            catch (ArgumentException e)
+            {
                 //Debug.LogError(e);
                 jsonError = e.ToString();
                 tutorialJson = null;
@@ -179,7 +183,8 @@ namespace EVMC4U
                 EditorUserSettings.SetConfigValue("VRMCheckCaution", "1");
                 page = "versionCheckFailed";
             }
-            else {
+            else
+            {
                 EditorUserSettings.SetConfigValue("VRMCheckCaution", "0");
             }
         }
@@ -194,29 +199,33 @@ namespace EVMC4U
         void OnGUI()
         {
             //ページを開いたまま初期化されたら、初期ロード処理に飛ばす
-            if (page == "") {
-                GUI.Label(new Rect(10, 10, window_w, window_h), "INVALID STATE\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+            if (page == "")
+            {
+                GUI.Label(new Rect(10, 10, window_w, window_h), "INVALID STATE\n\nチュートリアルの読み込みに失敗しました。Unityを再起動してください。\nそれでもダメな場合は、UnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease restart Unity.\nor Please re-import UnityPackage.");
                 Open();
                 return;
             }
 
             //アニメーションを立ち上げる
-            if (anim.valueChanged == null) {
+            if (anim.valueChanged == null)
+            {
                 var repaintEvent = new UnityEvent();
                 repaintEvent.AddListener(() => Repaint());
                 anim.valueChanged = repaintEvent;
             }
 
             //アニメーション折り返し
-            if (anim.value > anim.target-0.1f) {
+            if (anim.value > anim.target - 0.1f)
+            {
                 anim.target = 0.001f;
             }
 
             //ページの表示処理を開始
             TutorialPage tutorialPage;
-            if (!tutorialPages.TryGetValue(page, out tutorialPage)) {
+            if (!tutorialPages.TryGetValue(page, out tutorialPage))
+            {
                 //JSONが多分バグってるときに表示
-                GUI.Label(new Rect(10, 10, window_w - 20, window_h), "JSON LOAD FAILED\n"+ jsonError + "\n\nチュートリアルの読み込みに失敗しました。\nUnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease re-import UnityPackage.");
+                GUI.Label(new Rect(10, 10, window_w - 20, window_h), "JSON LOAD FAILED\n" + jsonError + "\n\nチュートリアルの読み込みに失敗しました。Unityを再起動してください。\nそれでもダメな場合は、UnityPackageの導入からやり直してみてください\n\nTutorial load failed.\nPlease restart Unity.\nor Please re-import UnityPackage.");
                 if (GUI.Button(new Rect(0, window_h - 30, window_w, 30), "Reload"))
                 {
                     Open();
@@ -242,14 +251,16 @@ namespace EVMC4U
             GUI.Label(new Rect(0, 0, window_w, window_h), tutorialPage.text);
 
             //ボタンを1つずつ表示
-            foreach (var b in tutorialPage.buttons) {
+            foreach (var b in tutorialPage.buttons)
+            {
                 if (tutorialJson.debug)
                 {
                     Debug.Log(b);
                 }
 
                 //ボタンに画像があればそれを表示
-                if (b.image != "") {
+                if (b.image != "")
+                {
                     //画像を読み込む
                     var texture = Resources.Load<Texture>("tutorial/" + b.image);
 
@@ -260,7 +271,7 @@ namespace EVMC4U
                         b.w = window_w;
                     }
 
-                    string buttonName = "btn#" + page + "#" +b.x + "-" + b.y + "-" + b.w + "-" + b.h;
+                    string buttonName = "btn#" + page + "#" + b.x + "-" + b.y + "-" + b.w + "-" + b.h;
                     float height = b.w * texture.height / texture.width;
 
                     Rect r = new Rect(b.x, b.y, b.w, height);
@@ -281,9 +292,11 @@ namespace EVMC4U
                         anim.target = 2f;
                     }
                 }
-                else {
+                else
+                {
                     //テキストボタンを表示
-                    if (GUI.Button(new Rect(b.x, b.y, b.w, b.h), b.text)) {
+                    if (GUI.Button(new Rect(b.x, b.y, b.w, b.h), b.text))
+                    {
                         buttonFireProcess(b.fire);
                         buttonUriProcess(b.uri);
                     }
@@ -293,14 +306,15 @@ namespace EVMC4U
             //デバッグ再読み込みボタン
             if (tutorialJson.debug)
             {
-                if (GUI.Button(new Rect(0,window_h-30,30,30),"#"))
+                if (GUI.Button(new Rect(0, window_h - 30, 30, 30), "#"))
                 {
                     Open();
                 }
             }
         }
 
-        void buttonUriProcess(string uri) {
+        void buttonUriProcess(string uri)
+        {
             if (tutorialJson.debug)
             {
                 Debug.LogWarning("buttonProcess: " + uri);
@@ -320,10 +334,42 @@ namespace EVMC4U
             }
         }
 
-        void buttonFireProcess(string fire) {
-            switch (fire) {
-                case "SaveLanguageJa": EditorUserSettings.SetConfigValue("Language", "ja"); break;
-                case "SaveLanguageEn": EditorUserSettings.SetConfigValue("Language", "en"); break;
+        void buttonFireProcess(string fire)
+        {
+            switch (fire)
+            {
+                case "SaveLanguageJa":
+                    {
+                        EditorUserSettings.SetConfigValue("Language", "ja");
+                        var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
+                        if (symbols.Contains("EVMC4U_EN"))
+                        {
+                            symbols.Remove("EVMC4U_EN");
+                        }
+                        if (!symbols.Contains("EVMC4U_JA"))
+                        {
+                            symbols.Add("EVMC4U_JA");
+                        }
+                        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, String.Join(";", symbols.ToArray()));
+
+                        break;
+                    }
+                case "SaveLanguageEn":
+                    {
+                        EditorUserSettings.SetConfigValue("Language", "en");
+                        var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone).Split(';').ToList();
+                        if (symbols.Contains("EVMC4U_JA"))
+                        {
+                            symbols.Remove("EVMC4U_JA");
+                        }
+                        if (!symbols.Contains("EVMC4U_EN"))
+                        {
+                            symbols.Add("EVMC4U_EN");
+                        }
+                        PlayerSettings.SetScriptingDefineSymbolsForGroup(BuildTargetGroup.Standalone, String.Join(";", symbols.ToArray()));
+
+                        break;
+                    }
                 default: break;
             }
         }

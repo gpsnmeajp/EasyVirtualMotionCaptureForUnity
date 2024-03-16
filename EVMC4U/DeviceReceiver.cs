@@ -40,19 +40,32 @@ namespace EVMC4U
         const int arrayMax = 16;
 
         [Header("DeviceReceiver v1.1")]
-        [SerializeField]
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = "";  //Inspector表示用
+        [SerializeField, Label("現実のトラッキング位置を反映")]
         public bool RealPosition = false;
 
-        [Header("Device Config")]
+#if EVMC4U_JA
+        [Header("トラッキング設定")]
+#else
+        [Header("Tracking Config")]
+#endif
         public string[] Serials = new string[arrayMax];
         public Transform[] Transforms = new Transform[arrayMax];
 
-        [Header("Device Monitor")]
+#if EVMC4U_JA
+        [Header("トラッキングデバイス情報モニタ(表示用)")]
+#else
+        [Header("Tracking Device Monitor")]
+#endif
         public string[] Types = new string[arrayMax];
         public Vector3[] Vector3s = new Vector3[arrayMax];
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[1];
 
         private ExternalReceiverManager externalReceiverManager = null;

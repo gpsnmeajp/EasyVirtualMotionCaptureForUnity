@@ -44,58 +44,284 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v4.0alpha")]
+        [Header("ExternalReceiver v4.0")]
+        [SerializeField, Label("VRMモデルのGameObject")]
         public GameObject Model = null;
+        [SerializeField, Label("一時停止")]
         public bool Freeze = false; //すべての同期を止める(撮影向け)
+        [SerializeField, Label("パケットリミッター")]
         public bool PacktLimiter = true; //パケットフレーム数が一定値を超えるとき、パケットを捨てる
 
+#if EVMC4U_JA
+        [Header("ルート姿勢同期オプション")]
+#else
         [Header("Root Synchronize Option")]
+#endif
+        [SerializeField, Label("ルート位置反映対象(VR向け)")]
         public Transform RootPositionTransform = null; //VR向けroot位置同期オブジェクト指定
+        [SerializeField, Label("ルート回転反映対象(VR向け)")]
         public Transform RootRotationTransform = null; //VR向けroot回転同期オブジェクト指定
+        [SerializeField, Label("ルート位置反映")]
         public bool RootPositionSynchronize = true; //ルート座標同期(ルームスケール移動)
+        [SerializeField, Label("ルート回転反映")]
         public bool RootRotationSynchronize = true; //ルート回転同期
+        [SerializeField, Label("ルートスケール反映")]
         public bool RootScaleOffsetSynchronize = false; //MRスケール適用
 
+#if EVMC4U_JA
+        [Header("その他の同期オプション")]
+#else
         [Header("Other Synchronize Option")]
+#endif
+        [SerializeField, Label("表情の同期")]
         public bool BlendShapeSynchronize = true; //表情等同期
+        [SerializeField, Label("ボーン位置の厳密な同期")]
         public bool BonePositionSynchronize = true; //ボーン位置適用(回転は強制)
 
+#if EVMC4U_JA
+        [Header("同期遮断オプション")]
+#else
         [Header("Synchronize Cutoff Option")]
+#endif
+        [SerializeField, Label("指ボーンを同期しない")]
         public bool HandPoseSynchronizeCutoff = false; //指状態反映オフ
+        [SerializeField, Label("目ボーンを同期しない")]
         public bool EyeBoneSynchronizeCutoff = false; //目ボーン反映オフ
 
+#if EVMC4U_JA
+        [Header("なめらかフィルター")]
+#else
         [Header("Lowpass Filter Option")]
+#endif
+        [SerializeField, Label("ボーン位置なめらか")]
         public bool BonePositionFilterEnable = false; //ボーン位置フィルタ
+        [SerializeField, Label("ボーン回転なめらか")]
         public bool BoneRotationFilterEnable = false; //ボーン回転フィルタ
+        [SerializeField, Label("なめらか係数(0.500～0.999)")]
         public float BoneFilter = 0.7f; //ボーンフィルタ係数
+        [SerializeField, Label("表情なめらか")]
         public bool BlendShapeFilterEnable = false; //BlendShapeフィルタ
+        [SerializeField, Label("表情なめらか係数(0.500～0.999)")]
         public float BlendShapeFilter = 0.7f; //BlendShapeフィルタ係数
 
+#if EVMC4U_JA
+        [Header("VRMファイル自動読み込み")]
+#else
         [Header("VRM Loader Option")]
+#endif
+        [SerializeField, Label("VRMファイル自動読み込み(対応アプリのみ)")]
         public bool enableAutoLoadVRM = true;        //VRMの自動読み込みの有効可否
 
+#if EVMC4U_JA
+        [Header("その他")]
+#else
         [Header("Other Option")]
+#endif
+        [SerializeField, Label("未キャリブレーション時にモデルを隠す")]
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
+        [SerializeField, Label("MRモード連動")]
         public bool SyncCalibrationModeWithScaleOffsetSynchronize = true; //キャリブレーションモードとスケール設定を連動させる
+        public Action<GameObject> BeforeModelDestroyAction = null; //破壊時Action
+        public Action<GameObject> AfterAutoLoadAction = null; //自動ロード時Action
 
+#if EVMC4U_JA
+        [Header("現在の状態(表示用)")]
+#else
         [Header("Status (Read only)")]
-        [SerializeField]
+#endif
+        [SerializeField, Label("動作状況")]
         private string StatusMessage = ""; //状態メッセージ(Inspector表示用)
+        [SerializeField, Label("オプション文字列")]
         public string OptionString = ""; //VMCから送信されるオプション文字列
 
+        [SerializeField, Label("自動読み込みVRMパス")]
         public string loadedVRMPath = "";        //読み込み済みVRMパス
+        [SerializeField, Label("自動読み込みVRM名前")]
         public string loadedVRMName = "";        //読み込み済みVRM名前
+        [SerializeField, Label("読み込んだモデルの親GameObject")]
         public GameObject LoadedModelParent = null; //読み込んだモデルの親
 
+        [SerializeField, Label("1フレームあたりのパケットフレーム数")]
         public int LastPacketframeCounterInFrame = 0; //1フレーム中に受信したパケットフレーム数
+        [SerializeField, Label("廃棄されたパケット数")]
         public int DropPackets = 0; //廃棄されたパケット(not パケットフレーム)
 
         public Vector3 HeadPosition = Vector3.zero;
 
+#if EVMC4U_JA
+        [Header("デイジーチェーン")]
+#else
         [Header("Daisy Chain")]
+#endif
         public GameObject[] NextReceivers = new GameObject[6]; //デイジーチェーン
 
-        
+#if EVMC4U_JA
+        [Header("ボーンの個別遮断(下半身、腕のみなど)")]
+#else
+        [Header("Cut bones")]
+#endif
+        [SerializeField, Label("有効")]
+        public bool CutBonesEnable = false;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Head)")]
+#else
+        [Header("Cut bones(Head)")]
+#endif
+        [SerializeField, Label("Neck遮断")]
+        public bool CutBoneNeck = false;
+        [SerializeField, Label("Head遮断")]
+        public bool CutBoneHead = false;
+        [SerializeField, Label("LeftEye遮断")]
+        public bool CutBoneLeftEye = false;
+        [SerializeField, Label("RightEye遮断")]
+        public bool CutBoneRightEye = false;
+        [SerializeField, Label("Jaw遮断")]
+        public bool CutBoneJaw = false;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Body)")]
+#else
+        [Header("Cut bones(Body)")]
+#endif
+        [SerializeField, Label("Hips遮断")]
+        public bool CutBoneHips = true;
+        [SerializeField, Label("Spine遮断")]
+        public bool CutBoneSpine = true;
+        [SerializeField, Label("Chest遮断")]
+        public bool CutBoneChest = true;
+        [SerializeField, Label("UpperChest遮断")]
+        public bool CutBoneUpperChest = true;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Left Arm)")]
+#else
+        [Header("Cut bones(Left Arm)")]
+#endif
+        [SerializeField, Label("LeftShoulder遮断")]
+        public bool CutBoneLeftShoulder = false;
+        [SerializeField, Label("LeftUpperArm遮断")]
+        public bool CutBoneLeftUpperArm = false;
+        [SerializeField, Label("LeftLowerArm遮断")]
+        public bool CutBoneLeftLowerArm = false;
+        [SerializeField, Label("LeftHand遮断")]
+        public bool CutBoneLeftHand = false;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Right Arm)")]
+#else
+        [Header("Cut bones(Right Arm)")]
+#endif
+        [SerializeField, Label("RightShoulder遮断")]
+        public bool CutBoneRightShoulder = false;
+        [SerializeField, Label("RightUpperArm遮断")]
+        public bool CutBoneRightUpperArm = false;
+        [SerializeField, Label("RightLowerArm遮断")]
+        public bool CutBoneRightLowerArm = false;
+        [SerializeField, Label("RightHand遮断")]
+        public bool CutBoneRightHand = false;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Left Leg)")]
+#else
+        [Header("Cut bones(Left Leg)")]
+#endif
+        [SerializeField, Label("LeftUpperLeg遮断")]
+        public bool CutBoneLeftUpperLeg = true;
+        [SerializeField, Label("LeftLowerLeg遮断")]
+        public bool CutBoneLeftLowerLeg = true;
+        [SerializeField, Label("LeftFoot遮断")]
+        public bool CutBoneLeftFoot = true;
+        [SerializeField, Label("LeftToes遮断")]
+        public bool CutBoneLeftToes = true;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Right Leg)")]
+#else
+        [Header("Cut bones(Right Leg)")]
+#endif
+        [SerializeField, Label("RightUpperLeg遮断")]
+        public bool CutBoneRightUpperLeg = true;
+        [SerializeField, Label("RightLowerLeg遮断")]
+        public bool CutBoneRightLowerLeg = true;
+        [SerializeField, Label("RightFoot遮断")]
+        public bool CutBoneRightFoot = true;
+        [SerializeField, Label("RightToes遮断")]
+        public bool CutBoneRightToes = true;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Left Hand)")]
+#else
+        [Header("Cut bones(Left Hand)")]
+#endif
+        [SerializeField, Label("LeftThumbProximal遮断")]
+        public bool CutBoneLeftThumbProximal = false;
+        [SerializeField, Label("LeftThumbIntermediate遮断")]
+        public bool CutBoneLeftThumbIntermediate = false;
+        [SerializeField, Label("LeftThumbDistal遮断")]
+        public bool CutBoneLeftThumbDistal = false;
+        [SerializeField, Label("LeftIndexProximal遮断")]
+        public bool CutBoneLeftIndexProximal = false;
+        [SerializeField, Label("LeftIndexIntermediate遮断")]
+        public bool CutBoneLeftIndexIntermediate = false;
+        [SerializeField, Label("LeftIndexDistal遮断")]
+        public bool CutBoneLeftIndexDistal = false;
+        [SerializeField, Label("LeftMiddleProximal遮断")]
+        public bool CutBoneLeftMiddleProximal = false;
+        [SerializeField, Label("LeftMiddleIntermediate遮断")]
+        public bool CutBoneLeftMiddleIntermediate = false;
+        [SerializeField, Label("LeftMiddleDistal遮断")]
+        public bool CutBoneLeftMiddleDistal = false;
+        [SerializeField, Label("LeftRingProximal遮断")]
+        public bool CutBoneLeftRingProximal = false;
+        [SerializeField, Label("LeftRingIntermediate遮断")]
+        public bool CutBoneLeftRingIntermediate = false;
+        [SerializeField, Label("LeftRingDistal遮断")]
+        public bool CutBoneLeftRingDistal = false;
+        [SerializeField, Label("LeftLittleProximal遮断")]
+        public bool CutBoneLeftLittleProximal = false;
+        [SerializeField, Label("LeftLittleIntermediate遮断")]
+        public bool CutBoneLeftLittleIntermediate = false;
+        [SerializeField, Label("LeftLittleDistal遮断")]
+        public bool CutBoneLeftLittleDistal = false;
+
+#if EVMC4U_JA
+        [Header("遮断ボーン (Right Hand)")]
+#else
+        [Header("Cut bones(Right Hand)")]
+#endif
+        [SerializeField, Label("RightThumbProximal遮断")]
+        public bool CutBoneRightThumbProximal = false;
+        [SerializeField, Label("RightThumbIntermediate遮断")]
+        public bool CutBoneRightThumbIntermediate = false;
+        [SerializeField, Label("RightThumbDistal遮断")]
+        public bool CutBoneRightThumbDistal = false;
+        [SerializeField, Label("RightIndexProximal遮断")]
+        public bool CutBoneRightIndexProximal = false;
+        [SerializeField, Label("RightIndexIntermediate遮断")]
+        public bool CutBoneRightIndexIntermediate = false;
+        [SerializeField, Label("RightIndexDistal遮断")]
+        public bool CutBoneRightIndexDistal = false;
+        [SerializeField, Label("RightMiddleProximal遮断")]
+        public bool CutBoneRightMiddleProximal = false;
+        [SerializeField, Label("RightMiddleIntermediate遮断")]
+        public bool CutBoneRightMiddleIntermediate = false;
+        [SerializeField, Label("RightMiddleDistal遮断")]
+        public bool CutBoneRightMiddleDistal = false;
+        [SerializeField, Label("RightRingProximal遮断")]
+        public bool CutBoneRightRingProximal = false;
+        [SerializeField, Label("RightRingIntermediate遮断")]
+        public bool CutBoneRightRingIntermediate = false;
+        [SerializeField, Label("RightRingDistal遮断")]
+        public bool CutBoneRightRingDistal = false;
+        [SerializeField, Label("RightLittleProximal遮断")]
+        public bool CutBoneRightLittleProximal = false;
+        [SerializeField, Label("RightLittleIntermediate遮断")]
+        public bool CutBoneRightLittleIntermediate = false;
+        [SerializeField, Label("RightLittleDistal遮断")]
+        public bool CutBoneRightLittleDistal = false;
+
+
         //---Const---
 
         //rootパケット長定数(拡張判別)
@@ -658,6 +884,7 @@ namespace EVMC4U
             //存在すれば即破壊(異常顔防止)
             if (Model != null)
             {
+                BeforeModelDestroyAction?.Invoke(Model);
                 Destroy(Model);
                 Model = null;
             }
@@ -744,6 +971,9 @@ namespace EVMC4U
                 //開放
                 vrmImporter.Dispose();
                 gltfData.Dispose();
+
+                //読み込み後アクションを実行
+                AfterAutoLoadAction?.Invoke(Model);
             }, null);
         }
 
@@ -771,6 +1001,66 @@ namespace EVMC4U
                 var t = animator.GetBoneTransform(bone);
                 if (t != null)
                 {
+                    //個別ボーン遮断
+                    if (CutBonesEnable)
+                    {
+                        if (bone == HumanBodyBones.Hips && CutBoneHips) { return; }
+                        if (bone == HumanBodyBones.LeftUpperLeg && CutBoneLeftUpperLeg) { return; }
+                        if (bone == HumanBodyBones.RightUpperLeg && CutBoneRightUpperLeg) { return; }
+                        if (bone == HumanBodyBones.LeftLowerLeg && CutBoneLeftLowerLeg) { return; }
+                        if (bone == HumanBodyBones.RightLowerLeg && CutBoneRightLowerLeg) { return; }
+                        if (bone == HumanBodyBones.LeftFoot && CutBoneLeftFoot) { return; }
+                        if (bone == HumanBodyBones.RightFoot && CutBoneRightFoot) { return; }
+                        if (bone == HumanBodyBones.Spine && CutBoneSpine) { return; }
+                        if (bone == HumanBodyBones.Chest && CutBoneChest) { return; }
+                        if (bone == HumanBodyBones.Neck && CutBoneNeck) { return; }
+                        if (bone == HumanBodyBones.Head && CutBoneHead) { return; }
+                        if (bone == HumanBodyBones.LeftShoulder && CutBoneLeftShoulder) { return; }
+                        if (bone == HumanBodyBones.RightShoulder && CutBoneRightShoulder) { return; }
+                        if (bone == HumanBodyBones.LeftUpperArm && CutBoneLeftUpperArm) { return; }
+                        if (bone == HumanBodyBones.RightUpperArm && CutBoneRightUpperArm) { return; }
+                        if (bone == HumanBodyBones.LeftLowerArm && CutBoneLeftLowerArm) { return; }
+                        if (bone == HumanBodyBones.RightLowerArm && CutBoneRightLowerArm) { return; }
+                        if (bone == HumanBodyBones.LeftHand && CutBoneLeftHand) { return; }
+                        if (bone == HumanBodyBones.RightHand && CutBoneRightHand) { return; }
+                        if (bone == HumanBodyBones.LeftToes && CutBoneLeftToes) { return; }
+                        if (bone == HumanBodyBones.RightToes && CutBoneRightToes) { return; }
+                        if (bone == HumanBodyBones.LeftEye && CutBoneLeftEye) { return; }
+                        if (bone == HumanBodyBones.RightEye && CutBoneRightEye) { return; }
+                        if (bone == HumanBodyBones.Jaw && CutBoneJaw) { return; }
+                        if (bone == HumanBodyBones.LeftThumbProximal && CutBoneLeftThumbProximal) { return; }
+                        if (bone == HumanBodyBones.LeftThumbIntermediate && CutBoneLeftThumbIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftThumbDistal && CutBoneLeftThumbDistal) { return; }
+                        if (bone == HumanBodyBones.LeftIndexProximal && CutBoneLeftIndexProximal) { return; }
+                        if (bone == HumanBodyBones.LeftIndexIntermediate && CutBoneLeftIndexIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftIndexDistal && CutBoneLeftIndexDistal) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleProximal && CutBoneLeftMiddleProximal) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleIntermediate && CutBoneLeftMiddleIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftMiddleDistal && CutBoneLeftMiddleDistal) { return; }
+                        if (bone == HumanBodyBones.LeftRingProximal && CutBoneLeftRingProximal) { return; }
+                        if (bone == HumanBodyBones.LeftRingIntermediate && CutBoneLeftRingIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftRingDistal && CutBoneLeftRingDistal) { return; }
+                        if (bone == HumanBodyBones.LeftLittleProximal && CutBoneLeftLittleProximal) { return; }
+                        if (bone == HumanBodyBones.LeftLittleIntermediate && CutBoneLeftLittleIntermediate) { return; }
+                        if (bone == HumanBodyBones.LeftLittleDistal && CutBoneLeftLittleDistal) { return; }
+                        if (bone == HumanBodyBones.RightThumbProximal && CutBoneRightThumbProximal) { return; }
+                        if (bone == HumanBodyBones.RightThumbIntermediate && CutBoneRightThumbIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightThumbDistal && CutBoneRightThumbDistal) { return; }
+                        if (bone == HumanBodyBones.RightIndexProximal && CutBoneRightIndexProximal) { return; }
+                        if (bone == HumanBodyBones.RightIndexIntermediate && CutBoneRightIndexIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightIndexDistal && CutBoneRightIndexDistal) { return; }
+                        if (bone == HumanBodyBones.RightMiddleProximal && CutBoneRightMiddleProximal) { return; }
+                        if (bone == HumanBodyBones.RightMiddleIntermediate && CutBoneRightMiddleIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightMiddleDistal && CutBoneRightMiddleDistal) { return; }
+                        if (bone == HumanBodyBones.RightRingProximal && CutBoneRightRingProximal) { return; }
+                        if (bone == HumanBodyBones.RightRingIntermediate && CutBoneRightRingIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightRingDistal && CutBoneRightRingDistal) { return; }
+                        if (bone == HumanBodyBones.RightLittleProximal && CutBoneRightLittleProximal) { return; }
+                        if (bone == HumanBodyBones.RightLittleIntermediate && CutBoneRightLittleIntermediate) { return; }
+                        if (bone == HumanBodyBones.RightLittleDistal && CutBoneRightLittleDistal) { return; }
+                        if (bone == HumanBodyBones.UpperChest && CutBoneUpperChest) { return; }
+                    }
+
                     //指ボーン
                     if (bone == HumanBodyBones.LeftIndexDistal ||
                         bone == HumanBodyBones.LeftIndexIntermediate ||
