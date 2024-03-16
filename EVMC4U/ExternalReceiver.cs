@@ -117,6 +117,8 @@ namespace EVMC4U
 #else
         [Header("Other Option")]
 #endif
+        [SerializeField, Label("更新タイミングをLateUpdateにする(Animationの後に実行して上書きする)")]
+        public bool EnableLateUpdateForOverwriteAnimationResult = false; //LateUpdateにするかどうか(Animationの後に実行して上書きする)
         [SerializeField, Label("未キャリブレーション時にモデルを隠す")]
         public bool HideInUncalibrated = false; //キャリブレーション出来ていないときは隠す
         [SerializeField, Label("MRモード連動")]
@@ -440,6 +442,23 @@ namespace EVMC4U
         }
 
         public void Update()
+        {
+            // 毎フレーム更新処理(前)
+            if (!EnableLateUpdateForOverwriteAnimationResult)
+            {
+                Process();
+            }
+        }
+        public void LateUpdate()
+        {
+            // 毎フレーム更新処理(後)
+            if (EnableLateUpdateForOverwriteAnimationResult)
+            {
+                Process();
+            }
+        }
+
+        public void Process()
         {
             //エラー・無限ループ時は処理をしない
             if (shutdown) { return; }
