@@ -33,14 +33,13 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.AnimatedValues;
 using UnityEngine.Events;
-using VRM;
 using System.Linq;
 
 namespace EVMC4U
 {
     public class Tutorial : EditorWindow
     {
-        const bool check = VRMVersion.MAJOR != 0 || VRMVersion.MINOR != 99;
+        const bool check = false; //バージョンチェック条件式があったが、バージョン番号がなくなったので無効化
         const int window_w = 400;
         const int window_h = 400;
 

@@ -31,7 +31,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
-using VRM;
+
 
 namespace EVMC4U
 {

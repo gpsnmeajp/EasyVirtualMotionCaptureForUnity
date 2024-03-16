@@ -36,7 +36,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
-using VRM;
+
 using UniGLTF;
 
 namespace EVMC4U
@@ -346,7 +346,7 @@ namespace EVMC4U
         //ボーン情報取得
         Animator animator = null;
         //VRMのブレンドシェーププロキシ
-        VRMBlendShapeProxy blendShapeProxy = null;
+        VRM.VRMBlendShapeProxy blendShapeProxy = null;
 
         //ボーンENUM情報テーブル
         Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
@@ -356,8 +356,8 @@ namespace EVMC4U
         Dictionary<HumanBodyBones, Quaternion> HumanBodyBonesRotationTable = new Dictionary<HumanBodyBones, Quaternion>();
 
         //ブレンドシェープ変換テーブル
-        Dictionary<string, BlendShapeKey> StringToBlendShapeKeyDictionary = new Dictionary<string, BlendShapeKey>();
-        Dictionary<BlendShapeKey, float> BlendShapeToValueDictionary = new Dictionary<BlendShapeKey, float>();
+        Dictionary<string, VRM.BlendShapeKey> StringToBlendShapeKeyDictionary = new Dictionary<string, VRM.BlendShapeKey>();
+        Dictionary<VRM.BlendShapeKey, float> BlendShapeToValueDictionary = new Dictionary<VRM.BlendShapeKey, float>();
 
 
         //uOSCサーバー
@@ -456,7 +456,7 @@ namespace EVMC4U
             //VRMモデルからBlendShapeProxyを取得(タイミングの問題)
             if (blendShapeProxy == null && Model != null)
             {
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                blendShapeProxy = Model.GetComponent<VRM.VRMBlendShapeProxy>();
             }
 
             //ルート位置がない場合
@@ -484,7 +484,7 @@ namespace EVMC4U
             if (OldModel != Model && Model != null)
             {
                 animator = Model.GetComponent<Animator>();
-                blendShapeProxy = Model.GetComponent<VRMBlendShapeProxy>();
+                blendShapeProxy = Model.GetComponent<VRM.VRMBlendShapeProxy>();
                 OldModel = Model;
 
                 Debug.Log("[ExternalReceiver] New model detected");
@@ -503,7 +503,7 @@ namespace EVMC4U
                     string key = "";
                     bool unknown = false;
                     //プリセットかどうかを調べる
-                    if (c.Preset == BlendShapePreset.Unknown) {
+                    if (c.Preset == VRM.BlendShapePreset.Unknown) {
                         //非プリセット(Unknown)であれば、Unknown用の名前変数を参照する
                         key = c.BlendShapeName;
                         unknown = true;
@@ -832,7 +832,7 @@ namespace EVMC4U
                     string lowerKey = key.ToLower();
 
                     //キーに該当するBSKeyが存在するかチェックする
-                    BlendShapeKey bskey;
+                    VRM.BlendShapeKey bskey;
                     if (StringToBlendShapeKeyDictionary.TryGetValue(lowerKey, out bskey)){
                         //キーに対して値を登録する
                         BlendShapeToValueDictionary[bskey] = value;
@@ -900,8 +900,8 @@ namespace EVMC4U
             //読み込み
             GlbLowLevelParser glbLowLevelParser = new GlbLowLevelParser(null, VRMdata);
             GltfData gltfData = glbLowLevelParser.Parse();
-            VRMData vrm = new VRMData(gltfData);
-            VRMImporterContext vrmImporter = new VRMImporterContext(vrm);
+            VRM.VRMData vrm = new VRM.VRMData(gltfData);
+            VRM.VRMImporterContext vrmImporter = new VRM.VRMImporterContext(vrm);
 
             isLoading = true;
 
