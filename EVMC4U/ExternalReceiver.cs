@@ -43,7 +43,7 @@ namespace EVMC4U
     //[RequireComponent(typeof(uOSC.uOscServer))]
     public class ExternalReceiver : MonoBehaviour, IExternalReceiver
     {
-        [Header("ExternalReceiver v4.1")]
+        [Header("ExternalReceiver v5.0")]
         [SerializeField, Label("VRMモデルのGameObject")]
         public GameObject Model = null;
         [SerializeField, Label("一時停止")]
@@ -141,6 +141,8 @@ namespace EVMC4U
         public string loadedVRMName = "";        //読み込み済みVRM名前
         [SerializeField, Label("読み込んだモデルの親GameObject")]
         public GameObject LoadedModelParent = null; //読み込んだモデルの親
+        [SerializeField, Label("読み込んだVRMの種別")]
+        public string loadedVRMType = "";        //読み込んだ種別
 
         [SerializeField, Label("1フレームあたりのパケットフレーム数")]
         public int LastPacketframeCounterInFrame = 0; //1フレーム中に受信したパケットフレーム数
@@ -488,6 +490,23 @@ namespace EVMC4U
                 //以降、VrmRootV1 is not nullでVRM1と扱うことができる
             }
 
+            //判定
+            if (blendShapeProxyV0 != null && VrmRootV1 != null)
+            {
+                loadedVRMType = "VRM0&1";
+            }
+            else if (blendShapeProxyV0 != null)
+            {
+                loadedVRMType = "VRM0";
+            }
+            else if (VrmRootV1 != null)
+            {
+                loadedVRMType = "VRM1";
+            }
+            else {
+                loadedVRMType = "Unknown";
+            }
+
             //ルート位置がない場合
             if (RootPositionTransform == null && Model != null)
             {
@@ -505,6 +524,8 @@ namespace EVMC4U
             //モデルがない場合はエラー表示をしておく(親切心)
             if (Model == null)
             {
+                blendShapeProxyV0 = null;
+                VrmRootV1 = null;
                 StatusMessage = "Model not found.";
                 return;
             }
