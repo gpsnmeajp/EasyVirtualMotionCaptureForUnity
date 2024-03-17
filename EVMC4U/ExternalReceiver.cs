@@ -36,7 +36,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
-
 using UniGLTF;
 
 namespace EVMC4U
@@ -347,8 +346,10 @@ namespace EVMC4U
 
         //ボーン情報取得
         Animator animator = null;
-        //VRMのブレンドシェーププロキシ
-        VRM.VRMBlendShapeProxy blendShapeProxy = null;
+        //VRMのブレンドシェイププロキシ(VRM0)
+        VRM.VRMBlendShapeProxy blendShapeProxyV0 = null;
+        //VRM10のルート(VRM1)
+        UniVRM10.Vrm10Instance VrmRootV1 = null;
 
         //ボーンENUM情報テーブル
         Dictionary<string, HumanBodyBones> HumanBodyBonesTable = new Dictionary<string, HumanBodyBones>();
@@ -357,10 +358,12 @@ namespace EVMC4U
         Dictionary<HumanBodyBones, Vector3> HumanBodyBonesPositionTable = new Dictionary<HumanBodyBones, Vector3>();
         Dictionary<HumanBodyBones, Quaternion> HumanBodyBonesRotationTable = new Dictionary<HumanBodyBones, Quaternion>();
 
-        //ブレンドシェープ変換テーブル
-        Dictionary<string, VRM.BlendShapeKey> StringToBlendShapeKeyDictionary = new Dictionary<string, VRM.BlendShapeKey>();
-        Dictionary<VRM.BlendShapeKey, float> BlendShapeToValueDictionary = new Dictionary<VRM.BlendShapeKey, float>();
-
+        //ブレンドシェイプ変換テーブル(VRM0)
+        Dictionary<string, VRM.BlendShapeKey> StringToBlendShapeKeyDictionaryV0 = new Dictionary<string, VRM.BlendShapeKey>();
+        Dictionary<VRM.BlendShapeKey, float> BlendShapeToValueDictionaryV0 = new Dictionary<VRM.BlendShapeKey, float>();
+        //ブレンドシェイプ変換テーブル(VRM1)
+        Dictionary<string, UniVRM10.ExpressionKey> StringToExpressionKeyDictionaryV1 = new Dictionary<string, UniVRM10.ExpressionKey>();
+        Dictionary<UniVRM10.ExpressionKey, float> ExpressionToValueDictionaryV1 = new Dictionary<UniVRM10.ExpressionKey, float>();
 
         //uOSCサーバー
         uOSC.uOscServer server = null;
@@ -472,10 +475,17 @@ namespace EVMC4U
             //5.6.3p1などRunInBackgroundが既定で無効な場合Unityが極めて重くなるため対処
             Application.runInBackground = true;
 
-            //VRMモデルからBlendShapeProxyを取得(タイミングの問題)
-            if (blendShapeProxy == null && Model != null)
+            //VRMモデルからBlendShapeProxyを取得(タイミングの問題) (VRM0)
+            if (blendShapeProxyV0 == null && Model != null)
             {
-                blendShapeProxy = Model.GetComponent<VRM.VRMBlendShapeProxy>();
+                blendShapeProxyV0 = Model.GetComponent<VRM.VRMBlendShapeProxy>();
+                //以降、blendShapeProxyV0 is not nullでVRM0と扱うことができる
+            }
+            //VRMモデルからVrmRootを取得(タイミングの問題) (VRM1)
+            if (VrmRootV1 == null && Model != null)
+            {
+                VrmRootV1 = Model.GetComponent<UniVRM10.Vrm10Instance>();
+                //以降、VrmRootV1 is not nullでVRM1と扱うことができる
             }
 
             //ルート位置がない場合
@@ -503,7 +513,8 @@ namespace EVMC4U
             if (OldModel != Model && Model != null)
             {
                 animator = Model.GetComponent<Animator>();
-                blendShapeProxy = Model.GetComponent<VRM.VRMBlendShapeProxy>();
+                blendShapeProxyV0 = Model.GetComponent<VRM.VRMBlendShapeProxy>();
+                VrmRootV1 = Model.GetComponent<UniVRM10.Vrm10Instance>();
                 OldModel = Model;
 
                 Debug.Log("[ExternalReceiver] New model detected");
@@ -512,40 +523,80 @@ namespace EVMC4U
                 //Debug.Log("-- Make BlendShapeProxy BSKey Table --");
 
                 //BSキー値辞書の初期化(SetValueで無駄なキーが適用されるのを防止する)
-                BlendShapeToValueDictionary.Clear();
+                BlendShapeToValueDictionaryV0.Clear();
+                ExpressionToValueDictionaryV1.Clear();
 
                 //文字-BSキー辞書の初期化(キー情報の初期化)
-                StringToBlendShapeKeyDictionary.Clear();
+                StringToBlendShapeKeyDictionaryV0.Clear();
+                StringToExpressionKeyDictionaryV1.Clear();
 
-                //全Clipsを取り出す
-                foreach (var c in blendShapeProxy.BlendShapeAvatar.Clips) {
-                    string key = "";
-                    bool unknown = false;
-                    //プリセットかどうかを調べる
-                    if (c.Preset == VRM.BlendShapePreset.Unknown) {
-                        //非プリセット(Unknown)であれば、Unknown用の名前変数を参照する
-                        key = c.BlendShapeName;
-                        unknown = true;
+                //全Clipsを取り出す(VRM0)
+                if (blendShapeProxyV0)
+                {
+                    foreach (var c in blendShapeProxyV0.BlendShapeAvatar.Clips)
+                    {
+                        string key = "";
+                        bool unknown = false;
+                        //プリセットかどうかを調べる
+                        if (c.Preset == VRM.BlendShapePreset.Unknown)
+                        {
+                            //非プリセット(Unknown)であれば、Unknown用の名前変数を参照する
+                            key = c.BlendShapeName;
+                            unknown = true;
+                        }
+                        else
+                        {
+                            //プリセットであればENUM値をToStringした値を利用する
+                            key = c.Preset.ToString();
+                            unknown = false;
+                        }
+
+                        //非ケース化するために小文字変換する
+                        string lowerKey = key.ToLower();
+                        //Debug.Log("Add: [key]->" + key + " [lowerKey]->" + lowerKey + " [clip]->" + c.ToString() + " [bskey]->"+c.Key.ToString() + " [unknown]->"+ unknown);
+
+                        //小文字名-BSKeyで登録する                    
+                        StringToBlendShapeKeyDictionaryV0.Add(lowerKey, c.Key);
                     }
-                    else {
-                        //プリセットであればENUM値をToStringした値を利用する
-                        key = c.Preset.ToString();
-                        unknown = false;
+                }
+
+                //全Clipsを取り出す(VRM1)
+                if (VrmRootV1) {
+                    foreach (var c in VrmRootV1.Runtime.Expression.ExpressionKeys)
+                    {
+                        string key = "";
+                        bool unknown = false;
+                        //プリセットかどうかを調べる
+                        if (c.Preset == UniVRM10.ExpressionPreset.custom)
+                        {
+                            //非プリセット(Unknown)であれば、Unknown用の名前変数を参照する
+                            key = c.Name;
+                            unknown = true;
+                        }
+                        else
+                        {
+                            //プリセットであればENUM値をToStringした値を利用する
+                            key = c.Preset.ToString();
+                            unknown = false;
+                        }
+
+                        //非ケース化するために小文字変換する
+                        string lowerKey = key.ToLower();
+                        //Debug.Log("Add: [key]->" + key + " [lowerKey]->" + lowerKey + " [clip]->" + c.ToString() + " [bskey]->"+c.Key.ToString() + " [unknown]->"+ unknown);
+
+                        //小文字名-BSKeyで登録する                    
+                        StringToExpressionKeyDictionaryV1.Add(lowerKey, c);
                     }
-
-                    //非ケース化するために小文字変換する
-                    string lowerKey = key.ToLower();
-                    //Debug.Log("Add: [key]->" + key + " [lowerKey]->" + lowerKey + " [clip]->" + c.ToString() + " [bskey]->"+c.Key.ToString() + " [unknown]->"+ unknown);
-
-                    //小文字名-BSKeyで登録する                    
-                    StringToBlendShapeKeyDictionary.Add(lowerKey, c.Key);
                 }
 
                 //メモ: プリセット同名の独自キー、独自キーのケース違いの重複は、共に区別しないと割り切る
                 /*
                 Debug.Log("-- Registered List --");
-                foreach (var k in StringToBlendShapeKeyDictionary) {
-                    Debug.Log("[k.Key]" + k.Key + " -> [k.Value.Name]" + k.Value.Name);
+                foreach (var k in StringToBlendShapeKeyDictionaryV0) {
+                    Debug.Log("B [k.Key]" + k.Key + " -> [k.Value.Name]" + k.Value.Name);
+                }
+                foreach (var k in StringToExpressionKeyDictionaryV1) {
+                    Debug.Log("E [k.Key]" + k.Key + " -> [k.Value.Name]" + k.Value.Name);
                 }
                 */
 
@@ -816,7 +867,7 @@ namespace EVMC4U
                 }
                 //受信と更新のタイミングは切り離した
             }
-            //ブレンドシェープ同期
+            //ブレンドシェイプ同期
             else if (message.address == "/VMC/Ext/Blend/Val"
                 && (message.values[0] is string)
                 && (message.values[1] is float)
@@ -842,7 +893,8 @@ namespace EVMC4U
                     }
                 }
 
-                if (BlendShapeSynchronize && blendShapeProxy != null)
+                // VRM0
+                if (BlendShapeSynchronize && blendShapeProxyV0 != null)
                 {
                     //v0.56 BlendShape仕様変更対応
                     //辞書からKeyに変換し、Key値辞書に値を入れる
@@ -852,24 +904,103 @@ namespace EVMC4U
 
                     //キーに該当するBSKeyが存在するかチェックする
                     VRM.BlendShapeKey bskey;
-                    if (StringToBlendShapeKeyDictionary.TryGetValue(lowerKey, out bskey)){
+                    if (StringToBlendShapeKeyDictionaryV0.TryGetValue(lowerKey, out bskey))
+                    {
                         //キーに対して値を登録する
-                        BlendShapeToValueDictionary[bskey] = value;
+                        BlendShapeToValueDictionaryV0[bskey] = value;
 
                         //Debug.Log("[lowerKey]->"+ lowerKey+" [bskey]->"+bskey.ToString()+" [value]->"+value);
                     }
-                    else {
-                        //そんなキーは無い
-                        //Debug.LogError("[lowerKey]->" + lowerKey + " is not found");
+                    else
+                    {
+                        //VRM1.x -> VRM0.x逆変換テーブル(前方互換性)
+                        switch (lowerKey)
+                        {
+                            case "happy": lowerKey = "joy"; break;
+                            case "sad": lowerKey = "sorrow"; break;
+                            case "relaxed": lowerKey = "fun"; break;
+                            case "aa": lowerKey = "a"; break;
+                            case "ih": lowerKey = "i"; break;
+                            case "ou": lowerKey = "u"; break;
+                            case "ee": lowerKey = "e"; break;
+                            case "oh": lowerKey = "o"; break;
+                            case "blinkleft": lowerKey = "blink_l"; break;
+                            case "blinkright": lowerKey = "blink_r"; break;
+                        }
+                        if (StringToBlendShapeKeyDictionaryV0.TryGetValue(lowerKey, out bskey))
+                        {
+                            //キーに対して値を登録する
+                            BlendShapeToValueDictionaryV0[bskey] = value;
+
+                            //Debug.Log("[lowerKey]->"+ lowerKey+" [bskey]->"+bskey.ToString()+" [value]->"+value);
+                        }
+                        else
+                        {
+                            //そんなキーは無い
+                            //Debug.LogError("[lowerKey]->" + lowerKey + " is not found");
+                        }
+                    }
+                }
+
+                // VRM1
+                if (BlendShapeSynchronize && VrmRootV1 != null)
+                {
+                    //v0.56 BlendShape仕様変更対応
+                    //辞書からKeyに変換し、Key値辞書に値を入れる
+
+                    //通信で受信したキーを小文字に変換して非ケース化
+                    string lowerKey = key.ToLower();
+
+                    //キーに該当するBSKeyが存在するかチェックする
+                    UniVRM10.ExpressionKey exkey;
+                    if (StringToExpressionKeyDictionaryV1.TryGetValue(lowerKey, out exkey))
+                    {
+                        //キーに対して値を登録する
+                        ExpressionToValueDictionaryV1[exkey] = value;
+
+                        //Debug.Log("[lowerKey]->"+ lowerKey+" [exkey]->"+exkey.ToString()+" [value]->"+value);
+                    }
+                    else
+                    {
+                        //VRM0.x -> VRM1.x変換テーブル(後方互換性)
+                        switch (lowerKey)
+                        {
+                            case "joy": lowerKey = "happy"; break;
+                            case "sorrow": lowerKey = "sad"; break;
+                            case "fun": lowerKey = "relaxed"; break;
+                            case "a": lowerKey = "aa"; break;
+                            case "i": lowerKey = "ih"; break;
+                            case "u": lowerKey = "ou"; break;
+                            case "e": lowerKey = "ee"; break;
+                            case "o": lowerKey = "oh"; break;
+                            case "blink_l": lowerKey = "blinkleft"; break;
+                            case "blink_r": lowerKey = "blinkright"; break;
+                        }
+                        if (StringToExpressionKeyDictionaryV1.TryGetValue(lowerKey, out exkey))
+                        {
+                            //キーに対して値を登録する
+                            ExpressionToValueDictionaryV1[exkey] = value;
+
+                            //Debug.Log("[lowerKey]->"+ lowerKey+" [exkey]->"+exkey.ToString()+" [value]->"+value);
+                        }
+                        else
+                        {
+                            //そんなキーは無い
+                            //Debug.LogError("[lowerKey]->" + lowerKey + " is not found");
+                        }
                     }
                 }
             }
             //ブレンドシェープ適用
             else if (message.address == "/VMC/Ext/Blend/Apply")
             {
-                if (BlendShapeSynchronize && blendShapeProxy != null)
+                if (BlendShapeSynchronize && blendShapeProxyV0 != null)
                 {
-                    blendShapeProxy.SetValues(BlendShapeToValueDictionary);
+                    blendShapeProxyV0.SetValues(BlendShapeToValueDictionaryV0);
+                }
+                if (BlendShapeSynchronize && VrmRootV1 != null)
+                {
+                    VrmRootV1.Runtime.Expression.SetWeights(ExpressionToValueDictionaryV1);
                 }
             }
         }
@@ -910,7 +1041,8 @@ namespace EVMC4U
         //ファイルからモデルを読み込む
         public void LoadVRMFromData(byte[] VRMdata)
         {
-            if (isLoading) {
+            if (isLoading)
+            {
                 Debug.LogError("Now Loading! load request is rejected.");
                 return;
             }
@@ -919,38 +1051,86 @@ namespace EVMC4U
             //読み込み
             GlbLowLevelParser glbLowLevelParser = new GlbLowLevelParser(null, VRMdata);
             GltfData gltfData = glbLowLevelParser.Parse();
-            VRM.VRMData vrm = new VRM.VRMData(gltfData);
-            VRM.VRMImporterContext vrmImporter = new VRM.VRMImporterContext(vrm);
 
-            isLoading = true;
+            // VRM0 読み込み処理
+            try
+            {
+                VRM.VRMData vrm = new VRM.VRMData(gltfData);
+                VRM.VRMImporterContext vrmImporter = new VRM.VRMImporterContext(vrm);
 
-            synchronizationContext.Post(async (arg) => {
-                RuntimeGltfInstance instance = await vrmImporter.LoadAsync(new VRMShaders.ImmediateCaller());
-                isLoading = false;
+                isLoading = true;
 
-                Model = instance.Root;
+                synchronizationContext.Post(async (arg) => {
+                    RuntimeGltfInstance instance = await vrmImporter.LoadAsync(new VRMShaders.ImmediateCaller());
+                    isLoading = false;
 
-                //ExternalReceiverの下にぶら下げる
-                LoadedModelParent = new GameObject();
-                LoadedModelParent.transform.SetParent(transform, false);
-                LoadedModelParent.name = "LoadedModelParent";
-                //その下にモデルをぶら下げる
-                Model.transform.SetParent(LoadedModelParent.transform, false);
+                    Model = instance.Root;
 
-                instance.EnableUpdateWhenOffscreen();
-                instance.ShowMeshes();
+                    //ExternalReceiverの下にぶら下げる
+                    LoadedModelParent = new GameObject();
+                    LoadedModelParent.transform.SetParent(transform, false);
+                    LoadedModelParent.name = "LoadedModelParent";
+                    //その下にモデルをぶら下げる
+                    Model.transform.SetParent(LoadedModelParent.transform, false);
 
-                //カメラなどの移動補助のため、頭の位置を格納する
-                animator = Model.GetComponent<Animator>();
-                HeadPosition = animator.GetBoneTransform(HumanBodyBones.Head).position;
+                    instance.EnableUpdateWhenOffscreen();
+                    instance.ShowMeshes();
 
-                //開放
-                vrmImporter.Dispose();
-                gltfData.Dispose();
+                    //カメラなどの移動補助のため、頭の位置を格納する
+                    animator = Model.GetComponent<Animator>();
+                    HeadPosition = animator.GetBoneTransform(HumanBodyBones.Head).position;
 
-                //読み込み後アクションを実行
-                AfterAutoLoadAction?.Invoke(Model);
-            }, null);
+                    //開放
+                    vrmImporter.Dispose();
+                    gltfData.Dispose();
+
+                    //読み込み後アクションを実行
+                    AfterAutoLoadAction?.Invoke(Model);
+                }, null);
+            }
+            catch (VRM.NotVrm0Exception)
+            {
+                //continue loading
+            }
+
+            // VRM1 読み込み処理
+            UniVRM10.Vrm10Data vrm10 = UniVRM10.Vrm10Data.Parse(gltfData);
+            if (vrm10 != null)
+            {
+                UniVRM10.Vrm10Importer vrm10Importer = new UniVRM10.Vrm10Importer(vrm10);
+
+                synchronizationContext.Post(async (_) =>
+                {
+                    RuntimeGltfInstance gltfInstance = await vrm10Importer.LoadAsync(new VRMShaders.ImmediateCaller());
+
+                    Model = gltfInstance.Root;
+                    Model.transform.parent = this.transform;
+
+                    //ExternalReceiverの下にぶら下げる
+                    LoadedModelParent = new GameObject();
+                    LoadedModelParent.transform.SetParent(transform, false);
+                    LoadedModelParent.name = "LoadedModelParent";
+                    //その下にモデルをぶら下げる
+                    Model.transform.SetParent(LoadedModelParent.transform, false);
+
+                    gltfInstance.EnableUpdateWhenOffscreen();
+                    gltfInstance.ShowMeshes();
+
+                    //カメラなどの移動補助のため、頭の位置を格納する
+                    animator = Model.GetComponent<Animator>();
+                    HeadPosition = animator.GetBoneTransform(HumanBodyBones.Head).position;
+
+                    //開放
+                    vrm10Importer.Dispose();
+                    gltfData.Dispose();
+
+                    //読み込み後アクションを実行
+                    AfterAutoLoadAction?.Invoke(Model);
+                }, null);
+            }
+            else {
+                Debug.LogError("Failed to load VRM1 and VRM0.");
+            }
         }
 
         //ボーン位置をキャッシュテーブルに基づいて更新
