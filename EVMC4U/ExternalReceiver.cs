@@ -37,6 +37,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Profiling;
 using UniGLTF;
+using UniVRM10;
 
 namespace EVMC4U
 {
@@ -639,6 +640,19 @@ namespace EVMC4U
                 */
 
                 //Debug.Log("-- End BlendShapeProxy BSKey Table --");
+            }
+
+            // VRM1において、VRM1によるLateUpdateでの更新はUpdateにずらして(Constraints)
+            // EVMC4UはLateUpdateにする(視線動かない問題への暫定対処)
+            if (VrmRootV1?.UpdateType == Vrm10Instance.UpdateTypes.LateUpdate)
+            {
+                VrmRootV1.UpdateType = Vrm10Instance.UpdateTypes.Update;
+                Debug.Log("[ExternalReceiver] [Temporary Fix] Forcefully change the UpdateType of Vrm10Instance to \"Update\".");
+            }
+            if (VrmRootV1?.UpdateType == Vrm10Instance.UpdateTypes.Update && EnableLateUpdateForOverwriteAnimationResult == false)
+            {
+                EnableLateUpdateForOverwriteAnimationResult = true;
+                Debug.Log("[ExternalReceiver] [Temporary Fix] Forcefully change the Update timing of ExternalReceiver to LateUpdate.");
             }
 
             BoneSynchronizeByTable();
