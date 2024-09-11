@@ -1,0 +1,27 @@
+{
+  "name": "com.gpsnmeajp.evmc4u",
+  "version": "5.1.0",
+  "displayName": "EVMC4U",
+  "description": "EasyVirtualMotionCaptureForUnity(EVMC4U) is VMCProtocol Receiver asset for Unity. Easy to use!",
+  "unity": "2019.4",
+  "dependencies": {
+    "com.vrmc.vrm": "0.104.0",
+    "com.vrmc.univrm": "0.104.0",
+    "com.vrmc.gltf": "0.104.0",
+    "com.hecomi.uosc": "1.0.0"
+  },
+  "keywords": [
+    "vrm",
+    "vmc"
+  ],
+  "author": {
+    "name": "gpsnmeajp"
+  },
+  "samples": [
+    {
+      "displayName": "Sample Scripts",
+      "description": "EVMC4U sample scripts.",
+      "path": "Samples~/SampleScripts"
+    }
+  ]
+}
