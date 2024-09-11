@@ -1,0 +1,4 @@
+- Open Window -> Package Manager
+- Packages: In Project
+- Select "EVMC4U"
+- Select "Samples" Tab
