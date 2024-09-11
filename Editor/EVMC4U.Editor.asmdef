@@ -1,0 +1,16 @@
+{
+    "name": "EVMC4U.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:af424023ee43983408c522e15eef8a08"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

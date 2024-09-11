@@ -1,0 +1,20 @@
+{
+    "name": "EVMC4U.Tests",
+    "rootNamespace": "EVMC4U",
+    "references": [
+        "GUID:e8063cf3a345f9c46b7c7c4f14d54285",
+        "GUID:af424023ee43983408c522e15eef8a08",
+        "GUID:0a7bb37c1b667d645a650b666f6d31dd"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

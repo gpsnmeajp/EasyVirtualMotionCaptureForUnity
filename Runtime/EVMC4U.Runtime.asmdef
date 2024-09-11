@@ -1,0 +1,20 @@
+{
+    "name": "EVMC4U.Runtime",
+    "rootNamespace": "EVMC4U",
+    "references": [
+        "GUID:05dd262a0c0a2f841b8252c8c3815582",
+        "GUID:e47c917724578cc43b5506c17a27e9a0",
+        "GUID:8d76e605759c3f64a957d63ef96ada7c",
+        "GUID:e8063cf3a345f9c46b7c7c4f14d54285",
+        "GUID:0a7bb37c1b667d645a650b666f6d31dd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
