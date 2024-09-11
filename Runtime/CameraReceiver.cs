@@ -24,7 +24,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#pragma warning disable 0414,0219
+// #pragma warning disable 0414,0219
 using System;
 using System.Collections;
 using System.Collections.Generic;
